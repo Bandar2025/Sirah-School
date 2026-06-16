@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { mockDb } from '../db/mockDb';
 import { Schedule, Classroom, Teacher, Subject } from '../types';
 import { 
@@ -15,7 +16,8 @@ import {
   Users, 
   BookMarked,
   AlertTriangle,
-  Grid
+  Grid,
+  Printer
 } from 'lucide-react';
 
 interface SchedulesViewProps {
@@ -44,6 +46,11 @@ export default function SchedulesView({ currentUser }: SchedulesViewProps) {
   const [classrooms] = useState<Classroom[]>(mockDb.getClassrooms());
   const [teachers] = useState<Teacher[]>(mockDb.getTeachers());
   const [subjects] = useState<Subject[]>(mockDb.getSubjects());
+
+  const schedulePrintRef = useRef<HTMLDivElement>(null);
+  const handlePrintSchedule = useReactToPrint({
+    contentRef: schedulePrintRef,
+  });
 
   // Filters state
   const [selectedClassId, setSelectedClassId] = useState<string>(classrooms[0]?.id || '');
@@ -135,13 +142,28 @@ export default function SchedulesView({ currentUser }: SchedulesViewProps) {
             </h2>
             <p className="text-slate-500 text-xs mt-0.5">صياغة وتخطيط جودة الحصص الخمس اليومية، استعراض جداول الفصول والمعلمين مع الفلترة</p>
           </div>
-          <button 
-            onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition max-sm:w-full justify-center"
-          >
-            <Plus className="w-4 h-4" />
-            جدولة وإسناد حصة جديدة
-          </button>
+          <div className="flex flex-wrap items-center gap-2 max-sm:w-full">
+            <button 
+              onClick={() => {
+                handlePrintSchedule();
+                const viewName = viewMode === 'class' ? 
+                  (classrooms.find(c => c.id === selectedClassId)?.name || '') : 
+                  (teachers.find(t => t.id === selectedTeacherId)?.name || '');
+                mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة الجدول الدراسي', `أمر طباعة للجدول الأسبوعي: ${viewName}`);
+              }}
+              className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition max-sm:w-full justify-center hover:cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              طباعة الجدول الأسبوعي
+            </button>
+            <button 
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition max-sm:w-full justify-center"
+            >
+              <Plus className="w-4 h-4" />
+              جدولة وإسناد حصة جديدة
+            </button>
+          </div>
         </div>
 
         {/* Filter Toolbar */}
@@ -199,8 +221,25 @@ export default function SchedulesView({ currentUser }: SchedulesViewProps) {
       </div>
 
       {/* Main Weekly Schedule Grid Output */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm overflow-hidden overflow-x-auto">
-        <table className="w-full border-collapse text-right select-none min-w-[750px]">
+      <div ref={schedulePrintRef} className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm overflow-hidden overflow-x-auto print:p-8">
+        {/* Printable official header */}
+        <div className="hidden print:block mb-6 border-b-2 border-slate-300 pb-4 text-right">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h1 className="text-xs font-bold text-slate-500">وزارة التعليم بالمملكة العربية السعودية</h1>
+              <h2 className="text-base font-bold text-slate-800 mt-1">{mockDb.getSettings().schoolName}</h2>
+            </div>
+            <div className="text-left font-sans text-[10px] text-slate-400">
+              <p>نوع التقرير: جدول أسبوعي معتمد</p>
+              <p className="font-mono">تاريخ التصدير: {new Date().toLocaleDateString('ar-SA')}</p>
+            </div>
+          </div>
+          <div className="text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg flex justify-between items-center font-semibold text-slate-700">
+            <span>العام الدراسي المقيد: {mockDb.getSettings().currentAcademicYear || '1447هـ'}</span>
+            <span>الهدف: {viewMode === 'class' ? `جدول الصف الدراسي (${classrooms.find(c => c.id === selectedClassId)?.name || ''})` : `جدول المعلم (${teachers.find(t => t.id === selectedTeacherId)?.name || ''})`}</span>
+          </div>
+        </div>
+        <table className="w-full border-collapse text-right select-none min-w-[750px] print:text-xs">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50 text-slate-700 font-bold">
               <th className="py-3 px-4 text-xs font-sans text-center w-[120px]">اليوم / الحصة</th>

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { mockDb } from '../db/mockDb';
 import { Classroom, Student, Subject, Grade } from '../types';
 import { 
@@ -28,6 +29,11 @@ export default function GradesView({ currentUser }: GradesViewProps) {
   const [students] = useState<Student[]>(mockDb.getStudents());
   const [subjects] = useState<Subject[]>(mockDb.getSubjects());
   const [grades, setGrades] = useState<Grade[]>(mockDb.getGrades());
+
+  const certificatePrintRef = useRef<HTMLDivElement>(null);
+  const handlePrintCertificate = useReactToPrint({
+    contentRef: certificatePrintRef,
+  });
 
   // Filters
   const [selectedClassId, setSelectedClassId] = useState<string>(classrooms[0]?.id || '');
@@ -299,7 +305,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               <button onClick={() => setReportStudent(null)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <div className="p-8 overflow-y-auto space-y-6 flex-1 bg-white" id="official-report-certificate">
+            <div ref={certificatePrintRef} className="p-8 overflow-y-auto space-y-6 flex-1 bg-white" id="official-report-certificate">
               {/* Certificate Head branding */}
               <div className="flex justify-between items-center border-b-4 border-slate-800 pb-4">
                 <div className="space-y-1">
@@ -419,7 +425,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               </button>
               <button 
                 onClick={() => {
-                  window.print();
+                  handlePrintCertificate();
                   mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة شهادة تقدير علامات', `أمر طباعة لشهادة علامات الطالب: ${reportStudent.name}`);
                 }}
                 className="px-4 py-2 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"

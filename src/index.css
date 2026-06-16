@@ -11,3 +11,13 @@ body {
   background-color: #f8fafc;
   color: #1e293b;
 }
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body {
+    background: transparent !important;
+  }
+}
