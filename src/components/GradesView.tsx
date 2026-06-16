@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useCustomPrint } from '../hooks/useCustomPrint';
 import { mockDb } from '../db/mockDb';
 import { Classroom, Student, Subject, Grade } from '../types';
 import { 
@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   Award,
   BookOpen,
-  Plus
+  Plus,
+  Download
 } from 'lucide-react';
 
 interface GradesViewProps {
@@ -31,9 +32,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
   const [grades, setGrades] = useState<Grade[]>(mockDb.getGrades());
 
   const certificatePrintRef = useRef<HTMLDivElement>(null);
-  const handlePrintCertificate = useReactToPrint({
-    contentRef: certificatePrintRef,
-  });
+  const handlePrintCertificate = useCustomPrint(certificatePrintRef);
 
   // Filters
   const [selectedClassId, setSelectedClassId] = useState<string>(classrooms[0]?.id || '');
@@ -143,6 +142,39 @@ export default function GradesView({ currentUser }: GradesViewProps) {
     };
   };
 
+  const handleExportGrades = () => {
+    const targetSub = subjects.find(s => s.id === selectedSubjectId);
+    const subName = targetSub ? targetSub.name : 'مقرر';
+    const minLimit = targetSub ? targetSub.minGrade : 50;
+
+    let csvContent = `اسم الطالب,درجة أعمال السنة,الدرجة النهائية,المجموع الإجمالي,الحد الأدنى للنجاح,النتيجة والتقدير\n`;
+    activeStudents.forEach(std => {
+      const cw = tempCoursework[std.id] || '0';
+      const fn = tempFinal[std.id] || '0';
+      const sum = Number(cw) + Number(fn);
+      const isPass = sum >= minLimit;
+      const resultText = isPass ? 'ناجح' : 'دون النصاب (راسب)';
+      csvContent += `"${std.name}",${cw},${fn},${sum},${minLimit},"${resultText}"\n`;
+    });
+
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const classNameFull = classrooms.find(c => c.id === selectedClassId)?.name || '';
+    link.setAttribute("download", `درجات_${classNameFull}_${subName}_${selectedExamName}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    mockDb.addAuditLog(
+      currentUser.id,
+      currentUser.username,
+      'تصدير كشف الدرجات',
+      `تصدير ملف Excel/CSV لدرجات الصف (${classNameFull}) لمادة (${subName}) - ${selectedExamName}`
+    );
+  };
+
   return (
     <div className="space-y-6" id="grades-tab-view">
       
@@ -156,11 +188,21 @@ export default function GradesView({ currentUser }: GradesViewProps) {
             </h2>
             <p className="text-slate-500 text-xs mt-0.5">تقييد أعمال السنة والاختبارات النهائية، الاحتساب الآلي للمعدلات، وطباعة كشوف التحصيل الأكاديمي</p>
           </div>
-          {notification && (
-            <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1.5 rounded-xl font-bold">
-              {notification}
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {notification && (
+              <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1.5 rounded-xl font-bold">
+                {notification}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleExportGrades}
+              className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition hover:cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-slate-405 text-slate-400" />
+              تصدير كشف الدرجات للـ Excel
+            </button>
+          </div>
         </div>
 
         {/* Filters bar */}
@@ -309,19 +351,20 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               {/* Certificate Head branding */}
               <div className="flex justify-between items-center border-b-4 border-slate-800 pb-4">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-slate-800 text-sm">وزارة التعليم بالمملكة العربية السعودية</h3>
+                  <h3 className="font-bold text-slate-800 text-sm">وزارة التربية والتعليم - الجمهورية اليمنية</h3>
+                  <h4 className="text-xs text-slate-400 font-medium">مكتب الأنشطة والاستمارات المدرسية والمتابعة القيادية</h4>
                   <h4 className="text-xs text-slate-500">{mockDb.getSettings().schoolName}</h4>
                   <p className="text-[10px] text-slate-400 font-mono">المرجع: CRT-{Date.now().toString().slice(-6)}</p>
                 </div>
                 <div className="text-center font-bold text-3xl text-sky-600 leading-none p-2 bg-slate-50 border border-slate-100 rounded-xl">
-                  🎨
+                  🇾🇪
                 </div>
               </div>
 
               {/* Title label */}
               <div className="text-center space-y-1 py-2">
                 <h1 className="text-xl font-bold text-slate-800 tracking-tight font-sans">إشعار درجات أعمال السنة والتحصيل</h1>
-                <p className="text-xs text-slate-400 font-mono">العام الدراسي: 1447هـ (2026م)</p>
+                <p className="text-xs text-slate-400 font-mono">العام الدراسي: {mockDb.getSettings().currentAcademicYear}</p>
               </div>
 
               {/* Metadata columns */}
@@ -329,7 +372,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
                 <div className="space-y-1">
                   <p className="text-slate-400">اسم الطالب الكريم:</p>
                   <p className="font-bold text-slate-850 text-sm">{reportStudent.name}</p>
-                  <p className="text-slate-400">السجل المدني / الهوية:</p>
+                  <p className="text-slate-400">رقم الهوية / القيد الوطني:</p>
                   <p className="font-bold font-mono text-slate-800">{reportStudent.nationalId}</p>
                 </div>
                 <div className="space-y-1">
@@ -382,9 +425,19 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               {/* Summary Average Rating */}
               <div className="flex justify-between items-center border-t border-slate-100 pt-4 text-xs">
                 <div>
-                  <p className="text-slate-400">التقدير والمعدل العام المقدر:</p>
+                  <p className="text-slate-400">المعدل العام اللفظي والتقدير الأكاديمي:</p>
                   <p className="text-2xl font-extrabold text-slate-800 font-mono">
-                    {getStudentGradesReport(reportStudent.id).averageRate}%
+                    {getStudentGradesReport(reportStudent.id).averageRate}% 
+                    <span className="text-sm font-sans font-bold text-sky-700 mr-2 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
+                      {(rate => {
+                        if (rate >= 90) return 'ممتاز والتقدير العام ممتاز جداً';
+                        if (rate >= 80) return 'جيد جداً';
+                        if (rate >= 70) return 'جيد';
+                        if (rate >= 60) return 'مقبول';
+                        if (rate >= 50) return 'ضعيف / ملحق';
+                        return 'راسب';
+                      })(getStudentGradesReport(reportStudent.id).averageRate)}
+                    </span>
                   </p>
                 </div>
                 <div className="text-left">

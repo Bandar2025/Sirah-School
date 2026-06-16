@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useCustomPrint } from '../hooks/useCustomPrint';
+import { useStickyPreferences } from '../hooks/useStickyPreferences';
 import { mockDb } from '../db/mockDb';
 import { Student, Parent, Classroom } from '../types';
 import { 
@@ -23,23 +24,52 @@ import {
   CheckCircle,
   FileSpreadsheet,
   Plus,
-  AlertCircle
+  AlertCircle,
+  SlidersHorizontal,
+  Eye,
+  EyeOff,
+  ArrowUpDown,
+  Check
 } from 'lucide-react';
 
 interface StudentsViewProps {
   currentUser: any;
+  initialAction?: string | null;
+  initialStatusFilter?: string | null;
 }
 
-export default function StudentsView({ currentUser }: StudentsViewProps) {
+export default function StudentsView({ currentUser, initialAction = null, initialStatusFilter = null }: StudentsViewProps) {
   const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
   const [parents, setParents] = useState<Parent[]>(mockDb.getParents());
   const [classrooms, setClassrooms] = useState<Classroom[]>(mockDb.getClassrooms());
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter || 'all');
+
+  // Persistent user preferences for displaying columns and sorting rows in Students table
+  const [prefVisibleColumns, setPrefVisibleColumns] = useStickyPreferences<Record<string, boolean>>(
+    'students_columns_v2',
+    {
+      nationalId: true,
+      studentNumber: true,
+      seatNumber: true,
+      name: true,
+      classId: true,
+      phone: true,
+      parent: true,
+      bloodGroup: false,
+      gender: false,
+      medical: false,
+      status: true,
+      actions: true
+    }
+  );
+
+  const [prefSortKey, setPrefSortKey] = useStickyPreferences<string>('students_sort_key_v2', 'name');
+  const [prefSortOrder, setPrefSortOrder] = useStickyPreferences<'asc' | 'desc'>('students_sort_order_v2', 'asc');
+  const [showPreferencesPanel, setShowPreferencesPanel] = useState(false);
 
   const idCardPrintRef = useRef<HTMLDivElement>(null);
-  const handlePrintIdCard = useReactToPrint({
-    contentRef: idCardPrintRef,
-  });
+  const handlePrintIdCard = useCustomPrint(idCardPrintRef);
 
   // Modals status
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,13 +97,21 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
   const [sGender, setSGender] = useState<'male' | 'female'>('male');
   const [sBirthDate, setSBirthDate] = useState('2015-05-01');
   const [sNationalId, setSNationalId] = useState('');
+  const [sSeatNumber, setSSeatNumber] = useState('');
+  const [sStudentNumber, setSStudentNumber] = useState('');
+  const [sGovernorate, setSGovernorate] = useState('صنعاء');
+  const [sDistrict, setSDistrict] = useState('السبعين');
   const [sAddress, setSAddress] = useState('');
   const [sMedical, setSMedical] = useState('سليم ولا توجد أمراض تذكر');
   const [sParentId, setSParentId] = useState('');
   const [sClassId, setSClassId] = useState('');
   const [sBloodGroup, setSBloodGroup] = useState('O+');
   const [sAvatar, setSAvatar] = useState('');
-  const [sStatus, setSStatus] = useState<'active' | 'graduated' | 'transferred'>('active');
+  const [sStatus, setSStatus] = useState<'active' | 'graduated' | 'transferred' | 'repeating' | 'suspended'>('active');
+  const [sMotherName, setSMotherName] = useState('');
+  const [sNationality, setSNationality] = useState('يمنية');
+  const [sRegistrationStatus, setSRegistrationStatus] = useState<'new' | 'transferred' | 'repeating' | 'baki'>('new');
+  const [sPhoto, setSPhoto] = useState('');
 
   const [validationError, setValidationError] = useState('');
 
@@ -89,11 +127,19 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
     setSGender('male');
     setSBirthDate('2015-05-01');
     setSNationalId('');
+    setSSeatNumber('');
+    setSStudentNumber('');
+    setSGovernorate('صنعاء');
+    setSDistrict('السبعين');
     setSAddress('');
     setSMedical('سليم ولا توجد أمراض تذكر');
     setSBloodGroup('O+');
     setSAvatar('');
     setSStatus('active');
+    setSMotherName('');
+    setSNationality('يمنية');
+    setSRegistrationStatus('new');
+    setSPhoto('');
     
     // Choose first parent and classroom as defaults
     setSParentId(parents[0]?.id || '');
@@ -102,12 +148,28 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
     setIsModalOpen(true);
   };
 
+  React.useEffect(() => {
+    if (initialAction === 'register') {
+      handleOpenAddModal();
+    }
+  }, [initialAction, parents, classrooms]);
+
+  React.useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+  }, [initialStatusFilter]);
+
   const handleOpenEditModal = (std: Student) => {
     setEditingStudent(std);
     setSName(std.name);
     setSGender(std.gender);
     setSBirthDate(std.birthDate);
     setSNationalId(std.nationalId);
+    setSSeatNumber(std.seatNumber || '');
+    setSStudentNumber(std.studentNumber || '');
+    setSGovernorate(std.governorate || 'صنعاء');
+    setSDistrict(std.district || 'السبعين');
     setSAddress(std.address);
     setSMedical(std.medicalDetails);
     setSParentId(std.parentId);
@@ -115,6 +177,10 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
     setSBloodGroup(std.bloodGroup);
     setSAvatar(std.avatar);
     setSStatus(std.status);
+    setSMotherName(std.motherName || '');
+    setSNationality(std.nationality || 'يمنية');
+    setSRegistrationStatus(std.registrationStatus || 'new');
+    setSPhoto(std.photo || '');
     setValidationError('');
     setIsModalOpen(true);
   };
@@ -139,13 +205,21 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
         gender: sGender,
         birthDate: sBirthDate,
         nationalId: sNationalId,
+        seatNumber: sSeatNumber || undefined,
+        studentNumber: sStudentNumber || undefined,
+        governorate: sGovernorate || undefined,
+        district: sDistrict || undefined,
         address: sAddress,
         medicalDetails: sMedical,
         parentId: sParentId,
         classId: sClassId,
         bloodGroup: sBloodGroup,
         avatar: sAvatar || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=150',
-        status: sStatus
+        status: sStatus,
+        motherName: sMotherName || undefined,
+        nationality: sNationality || undefined,
+        registrationStatus: sRegistrationStatus || undefined,
+        photo: sPhoto || undefined
       }, currentUser.id, currentUser.username);
     } else {
       mockDb.updateStudent(editingStudent.id, {
@@ -153,13 +227,21 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
         gender: sGender,
         birthDate: sBirthDate,
         nationalId: sNationalId,
+        seatNumber: sSeatNumber || undefined,
+        studentNumber: sStudentNumber || undefined,
+        governorate: sGovernorate || undefined,
+        district: sDistrict || undefined,
         address: sAddress,
         medicalDetails: sMedical,
         parentId: sParentId,
         classId: sClassId,
         bloodGroup: sBloodGroup,
         avatar: sAvatar,
-        status: sStatus
+        status: sStatus,
+        motherName: sMotherName || undefined,
+        nationality: sNationality || undefined,
+        registrationStatus: sRegistrationStatus || undefined,
+        photo: sPhoto || undefined
       }, currentUser.id, currentUser.username);
     }
 
@@ -207,22 +289,27 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
 
   // Simulated Excel Exporter (Generate dynamic CSV and download directly)
   const handleExportStudents = () => {
-    let csvContent = "Id,Name,NationalId,Class,ParentName,Phone,Gender,Blood,Medical\n";
-    students.forEach(s => {
+    let csvContent = "Id,Name,NationalId,Class,ParentName,Phone,Gender,Blood,Medical,Status\n";
+    filteredStudents.forEach(s => {
       const clsName = classrooms.find(c => c.id === s.classId)?.name || 'غير مسكن';
       const prt = parents.find(p => p.id === s.parentId);
-      csvContent += `"${s.id}","${s.name}","${s.nationalId}","${clsName}","${prt?.name || 'مجهول'}","${prt?.phone || 'مجهول'}","${s.gender === 'male' ? 'ذكر' : 'أنثى'}","${s.bloodGroup}","${s.medicalDetails.replace(/"/g, '""')}"\n`;
+      const statusLabel = s.status === 'active' ? 'نشط' :
+                          s.status === 'graduated' ? 'خريج' :
+                          s.status === 'transferred' ? 'منقول' :
+                          s.status === 'repeating' ? 'معيد' : 'معلق';
+      csvContent += `"${s.id}","${s.name}","${s.nationalId}","${clsName}","${prt?.name || 'مجهول'}","${prt?.phone || 'مجهول'}","${s.gender === 'male' ? 'ذكر' : 'أنثى'}","${s.bloodGroup}","${s.medicalDetails.replace(/"/g, '""')}","${statusLabel}"\n`;
     });
 
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "سجل_الطلاب_الكامل.csv");
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `كشف_الطلاب_${statusFilter}_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف الطلاب', 'تصدير ملف Excel/CSV للمقيدين بالمدرسة');
+    mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف الطلاب', `تصدير ملف Excel/CSV للطلاب المعروضين (فلترة: ${statusFilter})`);
   };
 
   // Simulated Import Excel Parser
@@ -272,140 +359,838 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
     }
   };
 
-  const filteredStudents = students.filter(s => 
-    s.name.includes(searchQuery) ||
-    s.nationalId.includes(searchQuery) ||
-    s.address.includes(searchQuery)
-  );
+  const [activeStudentProfileId, setActiveStudentProfileId] = useState<string | null>(null);
+  const [profileTab, setProfileTab] = useState<'personal' | 'parent' | 'attendance' | 'grades' | 'fees' | 'documents' | 'history'>('personal');
+
+  const filteredStudents = React.useMemo(() => {
+    const list = students.filter(s => {
+      const matchesSearch = s.name.includes(searchQuery) ||
+        s.nationalId.includes(searchQuery) ||
+        s.address.includes(searchQuery);
+      if (statusFilter === 'all') return matchesSearch;
+      return matchesSearch && s.status === statusFilter;
+    });
+
+    list.sort((a, b) => {
+      let valA: any = '';
+      let valB: any = '';
+
+      if (prefSortKey === 'name') {
+        valA = a.name || '';
+        valB = b.name || '';
+      } else if (prefSortKey === 'nationalId') {
+        valA = a.nationalId || '';
+        valB = b.nationalId || '';
+      } else if (prefSortKey === 'studentNumber') {
+        valA = a.studentNumber || '';
+        valB = b.studentNumber || '';
+      } else if (prefSortKey === 'seatNumber') {
+        const numA = parseInt(a.seatNumber || '0', 10);
+        const numB = parseInt(b.seatNumber || '0', 10);
+        if (!isNaN(numA) && !isNaN(numB) && numA !== 0 && numB !== 0) {
+          return prefSortOrder === 'asc' ? numA - numB : numB - numA;
+        }
+        valA = a.seatNumber || '';
+        valB = b.seatNumber || '';
+      } else if (prefSortKey === 'classId') {
+        valA = classrooms.find(c => c.id === a.classId)?.name || '';
+        valB = classrooms.find(c => c.id === b.classId)?.name || '';
+      } else if (prefSortKey === 'parentId') {
+        valA = parents.find(p => p.id === a.parentId)?.name || '';
+        valB = parents.find(p => p.id === b.parentId)?.name || '';
+      }
+
+      const strA = String(valA || '');
+      const strB = String(valB || '');
+      return prefSortOrder === 'asc'
+        ? strA.localeCompare(strB, 'ar-YE')
+        : strB.localeCompare(strA, 'ar-YE');
+    });
+
+    return list;
+  }, [students, searchQuery, statusFilter, prefSortKey, prefSortOrder, classrooms, parents]);
+
+  // Render the tabbed profile view for a selected student
+  const renderStudentProfile = (studentId: string) => {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return null;
+
+    const parent = parents.find(p => p.id === student.parentId);
+    const cls = classrooms.find(c => c.id === student.classId);
+    
+    // Compute student logs / metrics dynamically
+    const studentAttendances = mockDb.getAttendances().filter(a => a.studentId === student.id);
+    const studentGrades = mockDb.getGrades().filter(g => g.studentId === student.id);
+    const studentPayments = mockDb.getFeePayments().filter(p => p.studentId === student.id);
+    
+    // Computed states
+    const presentCount = studentAttendances.filter(a => a.status === 'present').length;
+    const absentCount = studentAttendances.filter(a => a.status === 'absent').length;
+    const lateCount = studentAttendances.filter(a => a.status === 'late').length;
+    const totalAttendance = studentAttendances.length;
+    const attendanceRate = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 100;
+
+    return (
+      <div className="bg-white rounded-2xl border border-slate-150 p-6 md:p-8 shadow-md space-y-6" id="student-professional-profile">
+        
+        {/* Profile Header Block */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-100 pb-6 shrink-0">
+          <div className="flex items-center gap-4.5">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 text-3xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              {student.avatar ? (
+                <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                student.gender === 'male' ? '👨‍🎓' : '👩‍🎓'
+              )}
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900 leading-tight block">{student.name}</h3>
+              <div className="flex flex-wrap items-center gap-2.5 text-[10px] text-slate-500 mt-1.5">
+                <span className="bg-primary/10 text-primary-dark font-extrabold px-2.5 py-0.5 rounded-full border border-primary/20">
+                  كود القيد: <span className="font-mono">{student.studentNumber || 'سجل جديد'}</span>
+                </span>
+                {student.seatNumber && (
+                  <span className="bg-amber-50 text-amber-800 font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200">
+                    رقم الجلوس: <span className="font-mono">{student.seatNumber}</span>
+                  </span>
+                )}
+                <span className={`px-2.5 py-0.5 rounded-full font-bold border ${
+                  student.status === 'active' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                  student.status === 'repeating' ? 'bg-orange-50 text-orange-850 border-orange-200' :
+                  'bg-slate-100 text-slate-700 border-slate-200'
+                }`}>
+                  {student.status === 'active' ? 'نشط ومقيد بالدراسة' :
+                   student.status === 'repeating' ? 'معيد مكرر للسنة' : 'غير نشط'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveStudentProfileId(null)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1 border border-slate-200"
+          >
+            &larr; عودة لقائمة الرصد
+          </button>
+        </div>
+
+        {/* Profile Tabs Navigation */}
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-150 pb-2">
+          {[
+            { id: 'personal', label: 'البيانات الشخصية والمدنية' },
+            { id: 'parent', label: 'معلومات ولي الأمر والاتصال' },
+            { id: 'attendance', label: `سجل الغياب كشف اليومي (${attendanceRate}%)` },
+            { id: 'grades', label: `حصيلة درجات الكنترول (${studentGrades.length})` },
+            { id: 'fees', label: 'المساهمات والوضع المالي' },
+            { id: 'documents', label: 'المستندات المدنية المحفوظة' },
+            { id: 'history', label: 'المسيرة والسجل الإداري' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setProfileTab(tab.id as any)}
+              className={`px-3.5 py-2 text-xs font-extrabold rounded-lg transition-all ${
+                profileTab === tab.id 
+                  ? 'bg-primary text-white shadow-xs' 
+                  : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Profile Details Content Screen */}
+        <div className="pt-2 min-h-64">
+          
+          {/* TAB 1: Personal Info */}
+          {profileTab === 'personal' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+              <div className="space-y-4">
+                <h4 className="text-xs font-black text-primary border-r-4 border-primary/70 pr-2 mb-4">تفاصيل القيد الوطني والديمغرافي</h4>
+                
+                <div className="grid grid-cols-2 gap-4 text-xs font-semibold leading-relaxed text-slate-600">
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">الاسم الكامل رباعياً:</span>
+                    <span className="text-slate-900 block font-bold text-[13px]">{student.name}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">الرقم الوطني للهوية:</span>
+                    <span className="text-slate-900 block font-mono font-bold text-[13px]">{student.nationalId}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">الجنس:</span>
+                    <span className="text-slate-900 block">{student.gender === 'male' ? 'ذكر - طالب قيد' : 'أنثى - طالبة قيد'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">تاريخ ولادة الطالب:</span>
+                    <span className="text-slate-900 block font-mono">{student.birthDate}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">فصيلة الدم الموثقة:</span>
+                    <span className="text-slate-900 block font-mono font-bold text-rose-600">{student.bloodGroup}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">الفصل المسكن المقر:</span>
+                    <span className="text-slate-900 block font-bold text-secondary">{cls ? cls.name : 'لم يسكن'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xs font-black text-primary border-r-4 border-primary/70 pr-2 mb-4">الموقع الجغرافي والملف الإكلينيكي</h4>
+                
+                <div className="grid grid-cols-2 gap-4 text-xs font-semibold leading-relaxed text-slate-600">
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">المحافظة الإدارية:</span>
+                    <span className="text-slate-900 block">{student.governorate || 'صنعاء'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-slate-400 text-[10px]">المديرية:</span>
+                    <span className="text-slate-900 block">{student.district || 'مديرية السبعين'}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="block text-slate-400 text-[10px]">العنوان الجغرافي السكني بالتفصيل:</span>
+                    <span className="text-slate-900 block">{student.address || 'حي حدة الرئاسي، صنعاء'}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="block text-rose-500 font-bold text-[10px]">الحالة الطبية وتحذيرات الطوارئ:</span>
+                    <span className="bg-rose-50/50 text-rose-900 border border-rose-100 p-2.5 rounded-xl block font-bold mt-1 text-[11px]">
+                      ❤️ {student.medicalDetails || 'سليم وجاهز للنشاط الرياضي والبدني'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: Parent Info */}
+          {profileTab === 'parent' && (
+            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+              {parent ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black text-primary border-r-4 border-primary/70 pr-2">سجل ولي أمر الطالب (المسؤول القانوني)</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-600 leading-normal">
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">اسم ولي الأمر بالكامل:</span>
+                        <span className="text-slate-900 block font-bold">{parent.name}</span>
+                      </div>
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">رقم الهوية المدنية:</span>
+                        <span className="text-slate-900 block font-mono font-bold">{parent.nationalId}</span>
+                      </div>
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">رقم هاتف الاتصال:</span>
+                        <span className="text-slate-900 block font-mono font-extrabold text-blue-700">{parent.phone}</span>
+                      </div>
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">جهة الوظيفة والمهنة:</span>
+                        <span className="text-slate-900 block">{parent.work || 'موقع حكومي/قطاع خاص'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black text-primary border-r-4 border-primary/70 pr-2">العناوين ووسائل الاتصال البديلة</h4>
+                    <div className="text-xs font-semibold space-y-3 text-slate-600">
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">المراسلات والبريد الإلكتروني المالي:</span>
+                        <span className="text-slate-900 block font-mono">{parent.email || 'father.invoice@manara.school.ye'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-slate-400 text-[10px]">مسكن المراسلات والإقامة الدائمة:</span>
+                        <span className="text-slate-900 block leading-relaxed">{parent.address || 'غير محدد بشكل منفصل'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-rose-500 font-bold">⚠️ لم يتم ربط الطالب بحساب ولي أمر معتمد بعد. يرجى تعديله لتخصيص كفيله المالي!</p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: Attendance Details */}
+          {profileTab === 'attendance' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-4 text-center font-sans">
+                <div className="bg-sky-50 border border-sky-100 p-3.5 rounded-xl">
+                  <span className="text-[10px] text-sky-800 font-bold block">معدل الحضور السنوي</span>
+                  <span className="text-lg font-black text-sky-950 font-mono mt-1 block">{attendanceRate}%</span>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">
+                  <span className="text-[10px] text-emerald-800 font-bold block">إجمالي أيام الحضور</span>
+                  <span className="text-lg font-black text-emerald-950 font-mono mt-1 block">{presentCount}</span>
+                </div>
+                <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl">
+                  <span className="text-[10px] text-rose-800 font-bold block">إجمالي الغيابات</span>
+                  <span className="text-lg font-black text-rose-500 font-mono mt-1 block">{absentCount}</span>
+                </div>
+                <div className="bg-amber-50 border border-amber-100 p-3.5 rounded-xl">
+                  <span className="text-[10px] text-amber-800 font-bold block">أيام تأخر الطلاب</span>
+                  <span className="text-lg font-black text-amber-900 font-mono mt-1 block">{lateCount}</span>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-150 overflow-hidden">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-slate-50 font-bold text-slate-700 border-b border-slate-150">
+                    <tr>
+                      <th className="py-2.5 px-4 font-sans">تاريخ الغياب</th>
+                      <th className="py-2.5 px-4 font-sans">الحالة</th>
+                      <th className="py-2.5 px-4 font-sans">الملاحظات والمبرر التربوي</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {studentAttendances.map(a => (
+                      <tr key={a.id} className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-4 font-mono text-slate-800 font-bold">{a.date}</td>
+                        <td className="py-2.5 px-4">
+                          <span className={`px-2 py-0.5 rounded font-extrabold text-[10px] inline-block ${
+                            a.status === 'present' ? 'bg-emerald-50 text-emerald-700' :
+                            a.status === 'absent' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {a.status === 'present' ? 'حاضر' :
+                             a.status === 'absent' ? 'غائب بدون عذر' :
+                             a.status === 'late' ? 'متأخر باص' : 'غياب مبرر'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-500">{a.notes || 'لا يوجد ملاحظات مدونة'}</td>
+                      </tr>
+                    ))}
+                    {studentAttendances.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="py-8 text-center text-slate-400 font-bold">لم يسجل أي غياب أو حضور للطالب في الكشوف النشطة اليومية.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: Grades / Control */}
+          {profileTab === 'grades' && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl border border-slate-150 overflow-hidden">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-slate-50 font-bold text-slate-700 border-b border-slate-150">
+                    <tr>
+                      <th className="py-2.5 px-4 font-sans">المادة الدراسية</th>
+                      <th className="py-2.5 px-4 font-sans">الامتحان والمرحلة</th>
+                      <th className="py-2.5 px-4 font-sans text-center">أعمال السنة</th>
+                      <th className="py-2.5 px-4 text-center font-sans">الاختبار النهائي</th>
+                      <th className="py-2.5 px-4 text-center font-sans">المجموع الإجمالي</th>
+                      <th className="py-2.5 px-4 text-left font-sans">النتيجة والكنترول</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-bold text-slate-800">
+                    {studentGrades.map(g => {
+                      const sub = mockDb.getSubjects().find(s => s.id === g.subjectId);
+                      return (
+                        <tr key={g.id} className="hover:bg-slate-50/50">
+                          <td className="py-3 px-4 text-slate-900 font-bold">{sub ? sub.name : 'مقرر رصد مدرسي'}</td>
+                          <td className="py-3 px-4 font-medium text-slate-500">{g.examName}</td>
+                          <td className="py-3 px-4 text-center font-mono">{g.courseworkGrade}</td>
+                          <td className="py-3 px-4 text-center font-mono">{g.finalExamGrade}</td>
+                          <td className="py-3 px-4 text-center font-mono text-primary text-[13px]">{g.totalGrade}</td>
+                          <td className="py-3 px-4 text-left">
+                            <span className={`px-2 py-0.5 rounded font-black text-[10px] inline-block ${
+                              g.resultStatus === 'pass' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
+                            }`}>
+                              {g.resultStatus === 'pass' ? '✓ ناجح متميز' : '⚠️ راسب بحاجة لتقوية'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {studentGrades.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">لا يوجد درجات أو اختبارات عامة مرصودة بالكنترول للطالب بعد.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Fees */}
+          {profileTab === 'fees' && (
+            <div className="space-y-4">
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between text-slate-800 text-xs">
+                <div>
+                  <span className="block text-slate-400 text-[10px]">إجمالي التوريدات والمساهمات المسددة للمدرسة:</span>
+                  <span className="block text-base font-black text-secondary font-mono mt-1">
+                    {studentPayments.reduce((sum, p) => sum + p.amountPaid, 0).toLocaleString()} ريال يمني
+                  </span>
+                </div>
+                <div className="text-left font-bold text-slate-500 text-[10px]">
+                  العام المالي النشط: {mockDb.getSettings().currentAcademicYear}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-150 overflow-hidden">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-slate-50 font-bold text-slate-700 border-b border-slate-150">
+                    <tr>
+                      <th className="py-2.5 px-4 font-sans">بند الرسم / الصندوق</th>
+                      <th className="py-2.5 px-4 font-sans">قيمة المبلغ المورد</th>
+                      <th className="py-2.5 px-4 font-sans">تاريخ السند</th>
+                      <th className="py-2.5 px-4 font-sans">طريقة التحصيل</th>
+                      <th className="py-2.5 px-4 text-left font-sans">رقم السند المالي</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium">
+                    {studentPayments.map(p => {
+                      const fType = mockDb.getFeeTypes().find(ft => ft.id === p.feeTypeId);
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50/50">
+                          <td className="py-2.5 px-4 font-extrabold text-slate-800">{fType ? fType.name : 'مساهمة مجتمعية عامة'}</td>
+                          <td className="py-2.5 px-4 font-mono font-bold text-slate-900">{p.amountPaid.toLocaleString()} ريال</td>
+                          <td className="py-2.5 px-4 font-mono text-slate-500">{p.paymentDate}</td>
+                          <td className="py-2.5 px-4 text-xs font-bold text-slate-600">{p.paymentMethod === 'cash' ? 'نقدي (كاش)' : 'تحويل شبكة'}</td>
+                          <td className="py-2.5 px-4 text-left font-mono font-semibold text-slate-500">{p.referenceNumber}</td>
+                        </tr>
+                      );
+                    })}
+                    {studentPayments.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-slate-400 font-bold">لم تورد أي مساهمات للنشاط أو بند الرسوم لصالح ملف هذا الطالب.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: Civilians Documents / Archival */}
+          {profileTab === 'documents' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-sans">
+              {[
+                { name: 'شهادة الميلاد الوطنية الموثقة والمترجمة', file: 'Birth_Certificate_YEM_Verified.pdf', size: '2.4 MB', exists: true },
+                { name: 'استمارة تفصيلات النجاح الوزارية (تاسع / ثانوي)', file: 'Academic_Form_Ministerial_Pass.pdf', size: '4.1 MB', exists: student.seatNumber ? true : false },
+                { name: 'سجل الكشف الطبي المدرسي المعتمد', file: 'Medical_Safety_Report_School.pdf', size: '1.2 MB', exists: true },
+                { name: 'صورة وثيقة الهوية وبطاقة العمل للأب', file: 'Parent_Identity_National_Copy.jpg', size: '3.0 MB', exists: parent ? true : false }
+              ].map((doc, idx) => (
+                <div key={idx} className="bg-white border border-slate-200 hover:border-primary/45 rounded-xl p-4 flex flex-col justify-between space-y-3 transition group">
+                  <div className="space-y-1">
+                    <span className="text-[24px] block">📄</span>
+                    <h5 className="font-bold text-slate-800 text-xs line-clamp-2 leading-tight">{doc.name}</h5>
+                    <span className="text-[9px] text-slate-400 block font-mono">{doc.file} ({doc.size})</span>
+                  </div>
+
+                  {doc.exists ? (
+                    <button 
+                      onClick={() => alert(`محاكاة حفظ الملف: ${doc.file} متاح للتحميل من الذاكرة المشفرة`)}
+                      className="w-full py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-lg text-[10px] font-bold border border-sky-100 transition"
+                    >
+                      تحميل وطباعة المستند
+                    </button>
+                  ) : (
+                    <span className="block text-center text-[10px] bg-rose-50 text-rose-700 py-1.5 rounded-lg border border-rose-100 font-bold">
+                      ⚠️ يحتاج لرفع وتكميل المعاملة
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* TAB 7: Logs and Audit History */}
+          {profileTab === 'history' && (
+            <div className="relative border-r border-slate-200 pr-5 space-y-5 py-2 font-sans">
+              <div className="absolute right-0 top-0 h-full w-0.5 bg-slate-200"></div>
+              {[
+                { title: 'تقييد وقبول الطالب بالمجمع', date: '2026-01-01', desc: `تم إدراج الطالب وتسجيل الرقم الأكاديمي الموحد ${student.studentNumber || 'REG-2026-' + student.id} وتوليد ملف السجلات.` },
+                { title: 'تسكين وتوزيع الفصل الدراسي', date: '2026-01-05', desc: `تلقى الطالب مواصفات الدراسة بالفصل المسكن وتوجيهه للشعبة: ${cls ? cls.name : 'عامة'}.` },
+                { title: 'ربط السند المالي وحساب الكفيل', date: '2026-01-07', desc: `تم التحقق والدورية المالية لحساب ولي الأمر المربوط ${parent ? parent.name : 'افتراضي'} للتواصل الدائم.` },
+                { title: 'جلسة تدقيق حوكمة المنارة', date: '2026-06-15', desc: 'تحديث القياسات، ومراجعة سجل المستندات الشخصية والتكامل مع حوكمة SQLite الذاتية.' }
+              ].map((ev, idx) => (
+                <div key={idx} className="relative text-xs leading-relaxed font-semibold text-slate-600">
+                  <span className="absolute -right-[23.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white ring-2 ring-primary/20"></span>
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-slate-400 font-mono block">{ev.date}</span>
+                    <h5 className="font-extrabold text-slate-800 text-[12px]">{ev.title}</h5>
+                    <p className="text-slate-500 font-medium text-[11px] mt-0.5 leading-relaxed">{ev.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    );
+  };
+
+  const handleRowClick = (studentId: string) => {
+    setActiveStudentProfileId(studentId);
+    setProfileTab('personal');
+  };
 
   return (
     <div className="space-y-6" id="students-tab-view">
       
-      {/* Upper Student List Box */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <Users className="w-5 h-5 text-sky-500" />
-              إدارة شؤون ملفات وقبول الطلاب
-            </h2>
-            <p className="text-slate-500 text-xs mt-0.5">تسجيل وتعديل بيانات وبيطاقات الطلاب، والقدرة الاستيرادية والتصديرية للبيانات الأكاديمية</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button 
-              onClick={() => setIsExcelOpen(true)}
-              className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold transition"
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              استيراد وتنزيل Excel
-            </button>
-            <button 
-              onClick={handleExportStudents}
-              className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 px-3.5 py-2 rounded-xl text-xs font-semibold transition"
-            >
-              <Download className="w-4 h-4" />
-              تصدير كشف الطلاب
-            </button>
-            <button 
-              onClick={handleOpenAddModal}
-              className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition"
-            >
-              <UserPlus className="w-4 h-4" />
-              قيد طالب جديد
-            </button>
-          </div>
-        </div>
+      {activeStudentProfileId ? (
+        renderStudentProfile(activeStudentProfileId)
+      ) : (
+        <>
+            {/* Upper Student List Box */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  إدارة شؤون ملفات وقبول الطلاب
+                </h2>
+                <p className="text-slate-500 text-xs mt-0.5">تسجيل وتعديل بيانات وبطاقات الطلاب، والبحث في أرشيف السجلات، بموجب الهوية والجلوس</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button 
+                  onClick={handleExportStudents}
+                  className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-slate-400" />
+                  تصدير كشف الطلاب
+                </button>
+                {['admin', 'director', 'student_affairs'].includes(currentUser.role) && (
+                  <button 
+                    onClick={handleOpenAddModal}
+                    className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/95 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4 text-white" />
+                    قيد طالَب جديد
+                  </button>
+                )}
+              </div>
+            </div>
 
-        {/* Filter & Search Bar */}
-        <div className="flex items-center bg-slate-50 rounded-xl px-3 py-2.5 max-w-md border border-slate-100 mb-6 font-sans">
-          <Search className="w-4 h-4 text-slate-400 ml-2" />
-          <input 
-            type="text" 
-            placeholder="البحث بالاسم، رقم السجل المدني، العنوان..."
-            className="bg-transparent border-none text-xs text-slate-700 placeholder-slate-400 focus:outline-none w-full"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+            {/* Status Tabs Filter */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-6 border-b border-slate-100 pb-3" id="students-status-filters">
+              {[
+                { id: 'all', label: 'كافة الطلاب المقيدين' },
+                { id: 'active', label: 'الطلاب النشطين ديمغرافياً' },
+                { id: 'graduated', label: 'شعبة الخريجين والأرشيف' },
+                { id: 'transferred', label: 'الطلاب المنقولين لمدارس يمنية أخرى' },
+                { id: 'repeating', label: 'الطلاب المعيدين للسنة' },
+              ].map(tab => (
+                <button
+                  type="button"
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    statusFilter === tab.id
+                      ? 'bg-[#0F4C81] text-white border border-[#0F4C81]'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-        {/* Regular list table */}
-        <div className="overflow-x-auto text-right">
-          <table className="w-full text-sm text-slate-600">
-            <thead className="bg-slate-50 border-b border-slate-100 font-bold text-slate-700">
-              <tr>
-                <th className="py-3 px-4 text-xs font-sans">الهوية</th>
-                <th className="py-3 px-4 text-xs font-sans">اسم الطالب</th>
-                <th className="py-3 px-4 text-xs font-sans">الفصل المقيد</th>
-                <th className="py-3 px-4 text-xs font-sans">الجوال</th>
-                <th className="py-3 px-4 text-xs font-sans">ولي الأمر</th>
-                <th className="py-3 px-4 text-xs font-sans">الحالة الطبية</th>
-                <th className="py-3 px-4 text-xs font-sans text-left">خصائص البطاقة والتحكم</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-600">
-              {filteredStudents.map((s) => {
-                const cls = classrooms.find(c => c.id === s.classId);
-                const parent = parents.find(p => p.id === s.parentId);
-                return (
-                  <tr key={s.id} className="hover:bg-slate-50/50 transition">
-                    <td className="py-3 px-4 font-mono text-xs font-bold text-slate-800">{s.nationalId}</td>
-                    <td className="py-3 px-4 font-medium flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden text-xs">
-                        {s.avatar ? (
-                          <img src={s.avatar} alt="stud" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          s.gender === 'male' ? '👨‍🎓' : '👩‍🎓'
-                        )}
-                      </div>
-                      <span>{s.name}</span>
-                    </td>
-                    <td className="py-3 px-4 text-xs text-slate-700 font-bold">
-                      {cls ? cls.name : <span className="text-slate-400 text-xs">غير مسكن بعد</span>}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-xs">{parent?.phone || 'مجهول'}</td>
-                    <td className="py-3 px-4 text-xs">{parent?.name || 'مجهول'}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 max-w-[150px] truncate text-xs bg-slate-50 border border-slate-100 rounded px-2 py-0.5 text-slate-600">
-                        <Heart className="w-3 h-3 text-rose-500 shrink-0" />
-                        <span className="truncate">{s.medicalDetails}</span>
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-left">
-                      <div className="inline-flex items-center gap-1.5">
-                        <button 
-                          onClick={() => setSelectedStudentForCard(s)}
-                          title="طباعة بطاقة الهوية"
-                          className="px-2 py-1 bg-violet-50 hover:bg-violet-100 border border-violet-100 text-violet-700 rounded-lg text-xs font-medium inline-flex items-center gap-1 transition"
+            {/* Filter, Search & Sticky Preferences Control Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center bg-slate-50 rounded-xl px-3 py-2.5 w-full md:max-w-md border border-slate-100 font-sans">
+                <Search className="w-4 h-4 text-slate-400 ml-2" />
+                <input 
+                  type="text" 
+                  placeholder="البحث بالاسم، رقم السجل المدني، العنوان..."
+                  className="bg-transparent border-none text-xs text-slate-700 placeholder-slate-400 focus:outline-none w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 self-start md:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowPreferencesPanel(!showPreferencesPanel)}
+                  className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
+                    showPreferencesPanel 
+                      ? 'bg-sky-50 text-sky-700 border-sky-300 shadow-xs'
+                      : 'bg-white hover:bg-slate-50 text-slate-600 border-slate-205'
+                  }`}
+                  title="تخصيص ترتيب العرض وأعمدة الجدول محلياً في المتصفح"
+                >
+                  <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+                  <span>تخصيص الأعمدة والفرز</span>
+                  <span className="bg-slate-100 text-slate-700 rounded-full px-2 py-0.5 text-[10px] font-mono">
+                    {Object.values(prefVisibleColumns).filter(Boolean).length} عمود
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sticky Preferences Panel */}
+            {showPreferencesPanel && (
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/60 mb-6 space-y-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <h3 className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-sky-500" />
+                    تفضيلات الجدول والترتيب المحلي (محفوظة بالمتصفح)
+                  </h3>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setPrefVisibleColumns({
+                        nationalId: true,
+                        studentNumber: true,
+                        seatNumber: true,
+                        name: true,
+                        classId: true,
+                        phone: true,
+                        parent: true,
+                        bloodGroup: false,
+                        gender: false,
+                        medical: false,
+                        status: true,
+                        actions: true
+                      });
+                      setPrefSortKey('name');
+                      setPrefSortOrder('asc');
+                    }}
+                    className="text-[10px] text-red-600 hover:underline font-bold cursor-pointer"
+                  >
+                    إعادة ضبط التفضيلات الافتراضية
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700">
+                  {/* Sorting Preferences */}
+                  <div className="space-y-3">
+                    <span className="block text-xs font-extrabold text-slate-600">ترتيب صفوف الطلاب حسب:</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: 'name', label: 'اسم الطالب أبجدياً' },
+                        { key: 'nationalId', label: 'رقم السجل المدني' },
+                        { key: 'studentNumber', label: 'رقم القيد الأكاديمي' },
+                        { key: 'seatNumber', label: 'رقم مقعد الكنترول' },
+                        { key: 'classId', label: 'اسم الصف والشعبة' },
+                        { key: 'parentId', label: 'اسم ولي الأمر المعتمد' }
+                      ].map(sortOpt => (
+                        <button
+                          type="button"
+                          key={sortOpt.key}
+                          onClick={() => setPrefSortKey(sortOpt.key)}
+                          className={`px-3 py-1.5 rounded-lg text-right font-medium text-[11px] transition flex items-center justify-between cursor-pointer ${
+                            prefSortKey === sortOpt.key 
+                              ? 'bg-[#0F4C81] text-white font-bold border border-[#0F4C81]' 
+                              : 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-600'
+                          }`}
                         >
-                          <Printer className="w-3.5 h-3.5" />
-                          <span>بطاقة الهوية</span>
+                          <span>{sortOpt.label}</span>
+                          {prefSortKey === sortOpt.key && <Check className="w-3 h-3 text-white" />}
                         </button>
-                        <button 
-                          onClick={() => handleOpenEditModal(s)}
-                          className="p-1 px-1.5 border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-600 hover:text-sky-700 transition rounded-lg text-xs"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteStudent(s.id)}
-                          className="p-1 px-1.5 border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-600 hover:text-rose-700 transition rounded-lg text-xs"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <span className="text-[11px] text-slate-500 font-medium font-sans">اتجاه الفرز:</span>
+                      <button
+                        type="button"
+                        onClick={() => setPrefSortOrder('asc')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
+                          prefSortOrder === 'asc' ? 'bg-sky-50 text-sky-700 border border-sky-300' : 'bg-white border border-slate-200 text-slate-500'
+                        }`}
+                      >
+                        تصاعدي (أ-ي، 0-9)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPrefSortOrder('desc')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
+                          prefSortOrder === 'desc' ? 'bg-sky-50 text-sky-700 border border-sky-300' : 'bg-white border border-slate-200 text-slate-500'
+                        }`}
+                      >
+                        تنازلي (ي-أ، 9-0)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Toggle Columns Preferences */}
+                  <div className="space-y-3">
+                    <span className="block text-xs font-extrabold text-slate-600">أعمدة العرض في الجدول (تعديل مباشر):</span>
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                      {[
+                        { key: 'nationalId', label: 'الرقم الوطني' },
+                        { key: 'studentNumber', label: 'رقم القيد' },
+                        { key: 'seatNumber', label: 'رقم المقعد' },
+                        { key: 'name', label: 'اسم الطالب' },
+                        { key: 'classId', label: 'الصف المسجل' },
+                        { key: 'phone', label: 'جوال الأب' },
+                        { key: 'parent', label: 'ولي الأمر' },
+                        { key: 'bloodGroup', label: 'فصيلة الدم' },
+                        { key: 'gender', label: 'الجنس' },
+                        { key: 'medical', label: 'الحالة الصحية' },
+                        { key: 'status', label: 'حالة القيد' },
+                        { key: 'actions', label: 'التحكم الهوية' }
+                      ].map(col => {
+                        const isVisible = prefVisibleColumns[col.key];
+                        return (
+                          <button
+                            type="button"
+                            key={col.key}
+                            onClick={() => setPrefVisibleColumns({
+                              ...prefVisibleColumns,
+                              [col.key]: !isVisible
+                            })}
+                            className={`px-2 py-1.5 rounded-lg text-right text-[10.5px] transition flex items-center justify-between border cursor-pointer ${
+                              isVisible 
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold' 
+                                : 'bg-white text-slate-400 border-slate-150 hover:bg-slate-50 hover:text-slate-600'
+                            }`}
+                          >
+                            <span className="truncate">{col.label}</span>
+                            {isVisible ? <Eye className="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-1" /> : <EyeOff className="w-3.5 h-3.5 text-slate-300 shrink-0 ml-1" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Regular list table */}
+            <div className="overflow-x-auto text-right">
+              <table className="w-full text-sm text-slate-600">
+                <thead className="bg-slate-50 border-b border-slate-100 font-bold text-slate-700">
+                  <tr>
+                    {prefVisibleColumns.nationalId && <th className="py-3 px-4 text-xs font-sans">الهوية</th>}
+                    {prefVisibleColumns.studentNumber && <th className="py-3 px-4 text-xs font-sans">رقم القيد</th>}
+                    {prefVisibleColumns.seatNumber && <th className="py-3 px-4 text-xs font-sans">رقم المقعد</th>}
+                    {prefVisibleColumns.name && <th className="py-3 px-4 text-xs font-sans">اسم الطالب (الملف وبطاقة الهوية)</th>}
+                    {prefVisibleColumns.classId && <th className="py-3 px-4 text-xs font-sans">الفصل والمحل الموقعي</th>}
+                    {prefVisibleColumns.phone && <th className="py-3 px-4 text-xs font-sans">حالة الجوال</th>}
+                    {prefVisibleColumns.parent && <th className="py-3 px-4 text-xs font-sans">ولي الأمر</th>}
+                    {prefVisibleColumns.bloodGroup && <th className="py-3 px-4 text-xs font-sans">فصيلة الدم</th>}
+                    {prefVisibleColumns.gender && <th className="py-3 px-4 text-xs font-sans">الجنس</th>}
+                    {prefVisibleColumns.medical && <th className="py-3 px-4 text-xs font-sans">البيان الصحي</th>}
+                    {prefVisibleColumns.status && <th className="py-3 px-4 text-xs font-sans">حالة القيد</th>}
+                    {prefVisibleColumns.actions && <th className="py-3 px-4 text-xs font-sans text-left">خصائص التحكم الكلي</th>}
                   </tr>
-                );
-              })}
-              {filteredStudents.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-400 text-xs">لا يوجد طلاب متطابقون لفلتر البحث حالياً.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-600">
+                  {filteredStudents.map((s) => {
+                    const cls = classrooms.find(c => c.id === s.classId);
+                    const parent = parents.find(p => p.id === s.parentId);
+                    return (
+                      <tr key={s.id} className="hover:bg-slate-50/50 transition cursor-pointer" onClick={() => handleRowClick(s.id)}>
+                        {prefVisibleColumns.nationalId && (
+                          <td className="py-3 px-4 font-mono text-xs font-bold text-slate-800" onClick={(e) => e.stopPropagation()}>{s.nationalId}</td>
+                        )}
+                        {prefVisibleColumns.studentNumber && (
+                          <td className="py-3 px-4 font-mono text-xs" onClick={(e) => e.stopPropagation()}>{s.studentNumber || '-'}</td>
+                        )}
+                        {prefVisibleColumns.seatNumber && (
+                          <td className="py-3 px-4 font-mono text-xs" onClick={(e) => e.stopPropagation()}>{s.seatNumber || '-'}</td>
+                        )}
+                        {prefVisibleColumns.name && (
+                          <td className="py-3 px-4 font-medium">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden text-xs shrink-0 shadow-xs">
+                                {s.avatar ? (
+                                  <img src={s.avatar} alt="stud" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                  s.gender === 'male' ? '👨‍🎓' : '👩‍🎓'
+                                )}
+                              </div>
+                              <div className="space-y-0.5 text-right">
+                                <span className="block text-primary hover:underline font-extrabold text-[13px]">{s.name}</span>
+                                <div className="flex flex-wrap items-center gap-1.5 text-[10px]" onClick={(e) => e.stopPropagation()}>
+                                  {s.studentNumber && <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded font-mono font-medium">{s.studentNumber}</span>}
+                                  {s.seatNumber && <span className="bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded font-mono font-medium">جلوس: {s.seatNumber}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        )}
+                        {prefVisibleColumns.classId && (
+                          <td className="py-3 px-4 text-xs font-sans" onClick={(e) => e.stopPropagation()}>
+                            <span className="block text-slate-700 font-bold text-[12px]">{cls ? cls.name : 'غير مسكن بعد'}</span>
+                            {s.governorate && <span className="block text-[10px] text-slate-400 mt-0.5">{s.governorate} • {s.district || 'الموقع الإداري'}</span>}
+                          </td>
+                        )}
+                        {prefVisibleColumns.phone && (
+                          <td className="py-3 px-4 font-mono text-xs" onClick={(e) => e.stopPropagation()}>{parent?.phone || 'مجهول'}</td>
+                        )}
+                        {prefVisibleColumns.parent && (
+                          <td className="py-3 px-4 text-xs" onClick={(e) => e.stopPropagation()}>{parent?.name || 'مجهول'}</td>
+                        )}
+                        {prefVisibleColumns.bloodGroup && (
+                          <td className="py-3 px-4 font-mono text-xs font-bold text-red-600" onClick={(e) => e.stopPropagation()}>{s.bloodGroup || 'O+'}</td>
+                        )}
+                        {prefVisibleColumns.gender && (
+                          <td className="py-3 px-4 text-xs" onClick={(e) => e.stopPropagation()}>{s.gender === 'male' ? 'ذكر' : 'أنثى'}</td>
+                        )}
+                        {prefVisibleColumns.medical && (
+                          <td className="py-3 px-4 text-xs text-slate-500 max-w-[150px] truncate" title={s.medicalDetails} onClick={(e) => e.stopPropagation()}>{s.medicalDetails}</td>
+                        )}
+                        {prefVisibleColumns.status && (
+                          <td className="py-3 px-4 text-xs" onClick={(e) => e.stopPropagation()}>
+                            <span className={`px-1.5 py-0.5 rounded font-bold ${
+                              s.status === 'active' ? 'bg-emerald-50 text-emerald-700' :
+                              s.status === 'repeating' ? 'bg-orange-50 text-orange-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {s.status === 'active' ? 'نشط قائم' :
+                               s.status === 'repeating' ? 'معيد للسنة' : 'غير نشط'}
+                            </span>
+                          </td>
+                        )}
+                        {prefVisibleColumns.actions && (
+                          <td className="py-3 px-4 text-left" onClick={(e) => e.stopPropagation()}>
+                            <div className="inline-flex items-center gap-1.5">
+                              <button 
+                                onClick={() => setSelectedStudentForCard(s)}
+                                title="طباعة بطاقة الهوية"
+                                className="px-2 py-1 bg-violet-50 hover:bg-violet-100 border border-violet-100 text-violet-700 rounded-lg text-xs font-medium inline-flex items-center gap-1 transition cursor-pointer"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                                <span>الهوية</span>
+                              </button>
+                              {['admin', 'director', 'student_affairs'].includes(currentUser.role) && (
+                                <>
+                                  <button 
+                                    onClick={() => handleOpenEditModal(s)}
+                                    type="button"
+                                    className="p-1 px-1.5 border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-600 hover:text-sky-700 transition rounded-lg text-xs cursor-pointer"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteStudent(s.id)}
+                                    type="button"
+                                    className="p-1 px-1.5 border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-600 hover:text-rose-700 transition rounded-lg text-xs cursor-pointer"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                  {filteredStudents.length === 0 && (
+                    <tr>
+                      <td colSpan={Object.values(prefVisibleColumns).filter(Boolean).length} className="py-10 text-center text-slate-400 text-xs">
+                        لا يوجد طلاب متطابقون لفلتر البحث حالياً بموجب تهيئة الأعمدة النشطة.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Printable ID Card mockup preview */}
       {selectedStudentForCard && (
@@ -580,18 +1365,18 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600 block">الاسم المدني الكامل لربط القيد</label>
+                  <label className="text-xs font-bold text-slate-600 block">اسم الطالب الثلاثي أو الرباعي المكتمل</label>
                   <input 
                     type="text" 
                     required
-                    placeholder="e.g. تركي بن خالد الغامدي"
+                    placeholder="e.g. عادل عبد اللطيف الشيباني"
                     className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500"
                     value={sName}
                     onChange={(e) => setSName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600 block">رقم الهوية الوطنية / الإقامة</label>
+                  <label className="text-xs font-bold text-slate-600 block">رقم الهوية الوطنية / رقم سجل القيد الآلي</label>
                   <input 
                     type="text" 
                     required
@@ -600,6 +1385,59 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
                     className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-mono"
                     value={sNationalId}
                     onChange={(e) => setSNationalId(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">رقم القيد المدرسي التسلسلي للطالب</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. YEM-2026-0044"
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-mono"
+                    value={sStudentNumber}
+                    onChange={(e) => setSStudentNumber(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">رقم المقعد (رقم الجلوس للامتحانات الوزارية)</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 540921"
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-mono"
+                    value={sSeatNumber}
+                    onChange={(e) => setSSeatNumber(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">المحافظة (الجمهورية اليمنية)</label>
+                  <select 
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-sans"
+                    value={sGovernorate}
+                    onChange={(e) => setSGovernorate(e.target.value)}
+                  >
+                    <option value="صنعاء">صنعاء (الأمانة)</option>
+                    <option value="تعز">تعز</option>
+                    <option value="عدن">عدن</option>
+                    <option value="إب">إب</option>
+                    <option value="الحديدة">الحديدة</option>
+                    <option value="حضرموت">حضرموت</option>
+                    <option value="مأرب">مأرب</option>
+                    <option value="ذمار">ذمار</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">المديرية التابع لها</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. السبعين / المشنة"
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-sans"
+                    value={sDistrict}
+                    onChange={(e) => setSDistrict(e.target.value)}
                   />
                 </div>
               </div>
@@ -702,14 +1540,88 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">اسم الأم بالكامل للتوثيق</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. بلقيس علي أحمد الصنعاني"
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-sans"
+                    value={sMotherName}
+                    onChange={(e) => setSMotherName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">جنسية الطالب</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. يمنية"
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-sans"
+                    value={sNationality}
+                    onChange={(e) => setSNationality(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">نوع القيد المدرسي الرسمي</label>
+                  <select 
+                    className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-medium font-sans"
+                    value={sRegistrationStatus}
+                    onChange={(e) => setSRegistrationStatus(e.target.value as any)}
+                  >
+                    <option value="new">مستجد (سنة أولى - قيد جديد في المدرسة)</option>
+                    <option value="transferred">منقول (من مدرسة أخرى بموجب وثيقة الانتقال)</option>
+                    <option value="repeating">معيد مكرر (بسبب رسوب بالعام الماضي)</option>
+                    <option value="baki">باقي للإعادة (غياب أو أسباب صحية معتمدة)</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block">تحميل صورة الطالب الشخصية 📸</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            if (typeof reader.result === 'string') {
+                              setSPhoto(reader.result);
+                              setSAvatar(reader.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full bg-slate-50 rounded-xl border border-dashed border-slate-200 px-3 py-1 text-slate-500 focus:outline-none text-[11px] cursor-pointer"
+                    />
+                    {(sAvatar || sPhoto) && (
+                      <img 
+                        src={sAvatar || sPhoto} 
+                        referrerPolicy="no-referrer"
+                        alt="Preview" 
+                        className="w-8 h-8 rounded-lg object-cover ring-1 ring-slate-200"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600 block">الصورة الشخصية (رابط خياري)</label>
+                <label className="text-xs font-bold text-slate-600 block">أو رابط الصورة الشخصية (خياري)</label>
                 <input 
                   type="text" 
                   placeholder="https://images.unsplash.com/..."
                   className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-mono"
                   value={sAvatar}
-                  onChange={(e) => setSAvatar(e.target.value)}
+                  onChange={(e) => {
+                    setSAvatar(e.target.value);
+                    setSPhoto(e.target.value);
+                  }}
                 />
               </div>
 
@@ -718,11 +1630,13 @@ export default function StudentsView({ currentUser }: StudentsViewProps) {
                 <select 
                   className="w-full bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 text-xs focus:outline-none focus:border-sky-500 font-medium"
                   value={sStatus}
-                  onChange={(e) => setSStatus(e.target.value as 'active' | 'graduated' | 'transferred')}
+                  onChange={(e) => setSStatus(e.target.value as 'active' | 'graduated' | 'transferred' | 'repeating' | 'suspended')}
                 >
                   <option value="active">ثابت وقائم حالياً نشط</option>
                   <option value="graduated">خريج المدرسة الموقر</option>
                   <option value="transferred">منقول إلى مدرسة خارجية</option>
+                  <option value="repeating">معيد مكرر للسنة الدراسية</option>
+                  <option value="suspended">موقَف مؤقتاً لأسباب إدارية</option>
                 </select>
               </div>
 

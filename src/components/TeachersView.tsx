@@ -17,7 +17,8 @@ import {
   PhoneCall, 
   Bookmark,
   Briefcase,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 
 interface TeachersViewProps {
@@ -129,6 +130,24 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
     t.qualification.includes(searchQuery)
   );
 
+  const handleExportTeachers = () => {
+    let csvContent = "Id,Name,NationalId,Qualification,ExperienceYears,Email,Phone,Salary,Specialty\n";
+    filtered.forEach(t => {
+      csvContent += `"${t.id}","${t.name}","${t.nationalId}","${t.qualification}","${t.experienceYears}","${t.email}","${t.phone}","${t.salary}","${t.specialty}"\n`;
+    });
+
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `سجل_المعلمين_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف المعلمين', `تصدير ملف Excel/CSV للمتعاقدين بالهيئة التدريسية المصفاة لعدد (${filtered.length}) معلم`);
+  };
+
   return (
     <div className="space-y-6" id="teachers-tab-view">
       
@@ -142,13 +161,22 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
             </h2>
             <p className="text-slate-500 text-xs mt-0.5">تنظيم سجل الهيئة التدريسية، المؤهلات الأكاديمية والقدرات، الرواتب والاتصال</p>
           </div>
-          <button 
-            onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition"
-          >
-            <UserPlus className="w-4 h-4" />
-            التعاقد مع معلم جديد
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button 
+              onClick={handleExportTeachers}
+              className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition hover:cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-slate-400" />
+              تصدير الكشف للـ Excel
+            </button>
+            <button 
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition"
+            >
+              <UserPlus className="w-4 h-4" />
+              التعاقد مع معلم جديد
+            </button>
+          </div>
         </div>
 
         {/* Filter bar */}

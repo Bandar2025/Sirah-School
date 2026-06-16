@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useCustomPrint } from '../hooks/useCustomPrint';
 import { mockDb } from '../db/mockDb';
 import { Schedule, Classroom, Teacher, Subject } from '../types';
 import { 
@@ -48,9 +48,7 @@ export default function SchedulesView({ currentUser }: SchedulesViewProps) {
   const [subjects] = useState<Subject[]>(mockDb.getSubjects());
 
   const schedulePrintRef = useRef<HTMLDivElement>(null);
-  const handlePrintSchedule = useReactToPrint({
-    contentRef: schedulePrintRef,
-  });
+  const handlePrintSchedule = useCustomPrint(schedulePrintRef);
 
   // Filters state
   const [selectedClassId, setSelectedClassId] = useState<string>(classrooms[0]?.id || '');

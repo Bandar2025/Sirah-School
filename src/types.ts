@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type UserRole = 'admin' | 'supervisor' | 'teacher' | 'accountant' | 'parent';
+export type UserRole = 'admin' | 'supervisor' | 'director' | 'vice_director' | 'student_affairs' | 'teacher' | 'accountant' | 'parent';
 
 export interface User {
   id: string;
@@ -41,13 +41,34 @@ export interface Student {
   gender: 'male' | 'female';
   birthDate: string;
   nationalId: string;
+  seatNumber?: string;
+  studentNumber?: string;
   address: string;
   medicalDetails: string;
   parentId: string; // foreign key
   classId: string; // foreign key
   avatar: string;
   bloodGroup: string;
-  status: 'active' | 'graduated' | 'transferred';
+  status: 'active' | 'graduated' | 'transferred' | 'repeating' | 'suspended';
+  governorate?: string;
+  district?: string;
+  motherName?: string;
+  nationality?: string;
+  registrationStatus?: 'new' | 'transferred' | 'repeating' | 'baki';
+  photo?: string;
+}
+
+export interface BehaviorEvaluation {
+  id: string;
+  studentId: string;
+  academicYear: string;
+  semester: 'first' | 'second' | 'second_round';
+  marks: Record<string, number>; // keyed "1" to "20", value 0 to 5
+  totalMark: number; // 0-100
+  behaviorGrade: string; // ممتاز / جيد جدا / جيد / مقبول / ضعيف
+  evaluatorId: string;
+  date: string;
+  notes?: string;
 }
 
 export interface Teacher {
@@ -143,4 +164,11 @@ export interface SchoolSettings {
   currentAcademicYear: string;
   address: string;
   bankAccount: string;
+  schoolType: 'government' | 'private' | 'complex';
+  governorate: string;
+  district: string;
+  principalName: string;
+  vicePrincipalName: string;
+  studentAffairsName: string;
+  semester: 'first' | 'second' | 'second_round';
 }

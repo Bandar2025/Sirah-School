@@ -4,6 +4,17 @@
 @theme {
   --font-sans: "Cairo", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Monaco, monospace;
+  
+  --color-primary: #0F4C81;
+  --color-secondary: #0F8A5F;
+  --color-accent: #D4A017;
+  --color-background-yem: #F8FAFC;
+  --color-card-yem: #FFFFFF;
+  --color-text-yem: #1E293B;
+  --color-border-yem: #E2E8F0;
+  --color-success-yem: #16A34A;
+  --color-warning-yem: #F59E0B;
+  --color-danger-yem: #DC2626;
 }
 
 body {

@@ -3,27 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { mockDb } from '../db/mockDb';
 import { 
   Users, 
-  UserCheck, 
   GraduationCap, 
-  Layers, 
+  School, 
+  Calendar, 
   DollarSign, 
+  TrendingUp, 
   Clock, 
-  FileText, 
-  Database, 
-  ShieldCheck, 
-  Activity, 
-  TrendingUp,
-  AlertTriangle
+  CheckCircle,
+  FileCheck2,
+  CalendarCheck2
 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface DashboardViewProps {
   currentUser: any;
   onNavigate: (tab: string) => void;
-  key?: any;
 }
 
 export default function DashboardView({ currentUser, onNavigate }: DashboardViewProps) {
@@ -33,369 +31,319 @@ export default function DashboardView({ currentUser, onNavigate }: DashboardView
   const attendance = mockDb.getAttendances();
   const payments = mockDb.getFeePayments();
   const settings = mockDb.getSettings();
-  const auditLogs = mockDb.getAuditLogs();
 
-  // Calculate figures
+  // 1. Calculate figures
   const totalStudents = students.length;
   const totalTeachers = teachers.length;
   const totalClasses = classes.length;
-  
-  // Total tuition fees collected
   const totalCollected = payments.reduce((sum, p) => sum + p.amountPaid, 0);
 
-  // Today Attendance rate (based on latest date of attendance)
+  // Today Attendance rate
   const uniqueDates = Array.from(new Set(attendance.map(a => a.date))).sort();
   const latestDate = uniqueDates[uniqueDates.length - 1] || 'اليوم';
   const latestAttendance = attendance.filter(a => a.date === latestDate);
   const presentCount = latestAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
+  const absentCount = latestAttendance.length - presentCount;
   const attendanceRate = latestAttendance.length > 0 
     ? Math.round((presentCount / latestAttendance.length) * 100) 
     : 100;
 
-  // Gender demographics
-  const maleCount = students.filter(s => s.gender === 'male').length;
-  const femaleCount = students.filter(s => s.gender === 'female').length;
+  // Pie chart data for attendance
+  const pieData = [
+    { name: 'الحضور (الملتزمين)', value: presentCount || 4, color: '#0F8A5F' },
+    { name: 'الغياب (بعذر وبدون)', value: absentCount || 1, color: '#D4A017' }
+  ];
+
+  // Map schedules to list of classes
+  const schedules = mockDb.getSchedules();
+  const subjects = mockDb.getSubjects();
+  const classrooms = mockDb.getClassrooms();
+  const teachersList = mockDb.getTeachers();
+
+  const todayPeriods = schedules.slice(0, 5).map((sch, i) => {
+    const cls = classrooms.find(c => c.id === sch.classroomId);
+    const sub = subjects.find(s => s.id === sch.subjectId);
+    const tch = teachersList.find(t => t.id === sch.teacherId);
+    return {
+      id: sch.id || `per-${i}`,
+      periodNumber: sch.periodNumber,
+      className: cls?.name || 'الصف التاسع - أ',
+      subjectName: sub?.name || 'القرآن الكريم',
+      teacherName: tch?.name || 'أ. نجيب اليوسفي'
+    };
+  });
+
+  // Fallback if schedule is empty
+  const defaultPeriods = [
+    { id: '1', periodNumber: 1, className: 'الصف التاسع الأساسي - أ', subjectName: 'القرآن الكريم والتجويد', teacherName: 'أ. نجيب عبده اليوسفي' },
+    { id: '2', periodNumber: 2, className: 'الصف الثالث الثانوي (علمي)', subjectName: 'الفيزياء المتقدمة', teacherName: 'أ. خالد محمد الحيمي' },
+    { id: '3', periodNumber: 3, className: 'الصف الأول الابتدائي - مختلط', subjectName: 'اللغة العربية (نحو وقراءة)', teacherName: 'أ. فاطمة عبد الله العلفي' },
+    { id: '4', periodNumber: 4, className: 'الصف الثالث الثانوي (أدبي)', subjectName: 'الأدب العربي والبلاغة', teacherName: 'أ. نجيب عبده اليوسفي' }
+  ];
+
+  const displayPeriods = todayPeriods.length > 0 ? todayPeriods : defaultPeriods;
+
+  // Custom activities requested by user
+  const activities = [
+    {
+      id: 'act-1',
+      title: 'تم تسجيل طالب جديد للعام الحالي',
+      desc: 'تم فحص وقيد الطالب "حمير بن عبد الله السريحي" بشعبة الصف التاسع والتحقق من ملف سنده المالي ورقم جلوسه الوزاري الموثق.',
+      type: 'student',
+      time: 'منذ ساعتين - نظام التسجيل',
+      tag: 'شؤون الطلاب'
+    },
+    {
+      id: 'act-2',
+      title: 'تم اعتماد واعتماد كشوف الدرجات والمعدلات',
+      desc: 'صادق رئيس الكنترول المدرسي على نتيجة رصد مواد اختبارات نصف الفصل الأول وتثبيت التقارير الوزارية في خادم الأرشيف الآمن.',
+      type: 'result',
+      time: 'منذ 4 ساعات - الكنترول العام',
+      tag: 'إدارة الكنترول'
+    },
+    {
+      id: 'act-3',
+      title: 'تم دفع الرسوم وإصدار سندات التحصيل',
+      desc: 'تقييد كفيل الطالب الطالبة "أروى بنت عبد الله السريحي" لمبلغ المساهمة المجتمعية السنوية ورسم التشغيل بقيمة 35,000 ريال نقداً.',
+      type: 'payment',
+      time: 'يوم أمس - مكتب الصندوق والمالية',
+      tag: 'الحسابات المالية'
+    }
+  ];
 
   return (
     <div className="space-y-6" id="dashboard-tab-view">
-      {/* Upper Status & Brand Board */}
+      
+      {/* Title block */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 font-sans tracking-tight">أهلاً بك، {currentUser?.fullName || 'عضو طاقم الإدارة'}</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            مرحباً بك في لوحة تحكم <span className="font-semibold text-sky-600">{settings.schoolName}</span>. العام الدراسي الحالي: {settings.currentAcademicYear}
+        <div className="space-y-1">
+          <span className="text-[10px] bg-[#0F4C81]/15 text-[#0F4C81] px-2.5 py-1 rounded-full font-bold tracking-wider">الجمهورية اليمنية - وزارة التربية والتعليم</span>
+          <h1 className="text-xl font-bold text-slate-800 font-sans tracking-tight pt-1">لوحة القيادة والمؤشرات التربوية العامة</h1>
+          <p className="text-slate-500 text-xs">
+            مرحباً بك في النظام الوطني الموحد لـ <span className="font-semibold text-[#0F4C81]">{settings.schoolName}</span>. العام الدراسي الحالي {settings.currentAcademicYear}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 font-mono border border-emerald-100">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            قاعدة البيانات: متصلة محلياً (SQLite)
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 font-mono border border-purple-100">
-            <Database className="w-3.5 h-3.5" />
-            وضع عدم الاتصال نشط (Offline Mode)
-          </span>
-        </div>
-      </div>
-
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Card 1 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-              <GraduationCap className="w-6 h-6" />
-            </div>
-            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">اجمالي الطلاب</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800 font-sans tracking-tight">{totalStudents}</h3>
-            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-              <Users className="w-3 h-3 text-slate-400" />
-              <span>{maleCount} ذكور / {femaleCount} إناث</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Card 2 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-              <Users className="w-6 h-6" />
-            </div>
-            <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium">الكادر التعليمي</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800 font-sans tracking-tight">{totalTeachers}</h3>
-            <p className="text-xs text-slate-500 mt-1">أعضاء هيئة التدريس الفاعلين</p>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-              <Layers className="w-6 h-6" />
-            </div>
-            <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-medium">الفصول والمجموعات</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800 font-sans tracking-tight">{totalClasses}</h3>
-            <p className="text-xs text-slate-500 mt-1">توزيع الفصول الدراسية النشطة</p>
-          </div>
-        </div>
-
-        {/* Card 4 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">الرسوم المحصلة</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800 font-sans tracking-tight">{totalCollected.toLocaleString()} <span className="text-xs font-semibold">ريال</span></h3>
-            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />
-              <span>مسجلة ومثبتة في الخزينة</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Card 5 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full font-medium">نسبة الحضور</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800 font-sans tracking-tight">{attendanceRate}%</h3>
-            <p className="text-xs text-slate-500 mt-1">كشف حصر غياب: {latestDate}</p>
+        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-3 rounded-xl shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#0F8A5F]/10 flex items-center justify-center text-[#0F8A5F] text-lg">🏫</div>
+          <div>
+            <span className="block text-[9px] text-slate-400 font-mono">المديرية والقطاع</span>
+            <span className="block text-xs font-bold text-slate-700">{settings.governorate} - {settings.district}</span>
           </div>
         </div>
       </div>
 
-      {/* Middle Data Charts & Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 5 Stats Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="dashboard-statistics">
         
-        {/* Right: School Quick Access Panels */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4 drop-shadow-sm">
-            <Activity className="w-5 h-5 text-sky-500" />
-            مركز الوصول السريع للعمليات
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <button 
-              onClick={() => onNavigate('students')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-sky-100 hover:bg-sky-50 text-slate-700 hover:text-sky-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2">
-                <Users className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">ملفات الطلاب والقبول</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('attendance')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
-                <UserCheck className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">رصد الحضور والغياب اليومي</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('grades')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-amber-100 hover:bg-amber-50 text-slate-700 hover:text-amber-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                <FileText className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">إدخال الاختبارات والدرجات</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('schedules')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-purple-100 hover:bg-purple-50 text-slate-700 hover:text-purple-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-2">
-                <Clock className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold font-sans">توليد جدول الحصص الأسبوعي</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('financial')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-rose-100 hover:bg-rose-50 text-slate-700 hover:text-rose-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-2">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-semibold">سندات القبض والشؤون المالية</span>
-            </button>
-            <button 
-              onClick={() => onNavigate('sqlite-explorer')} 
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-800 transition duration-150 text-center"
-            >
-              <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-100 flex items-center justify-center mb-2">
-                <Database className="w-5 h-5 text-indigo-600" />
-              </div>
-              <span className="text-xs font-semibold">مستعرض قاعدة بيانات SQLite</span>
-            </button>
+        {/* Card 1: Students */}
+        <div className="bg-white rounded-2xl border border-slate-150 p-5 shadow-xs hover:shadow-sm transition-all duration-200">
+          <div className="flex items-start justify-between">
+            <span className="text-[32px]">📚</span>
+            <span className="inline-flex items-center gap-0.5 text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full font-bold">
+              <TrendingUp className="w-3 h-3 text-emerald-600 ml-0.5 shrink-0" />
+              +4.2% مقارنة بالعام الماضي
+            </span>
           </div>
-
-          {/* Demographic summary / Progress charts */}
-          <div className="mt-6 border-t border-slate-100 pt-6">
-            <h3 className="text-sm font-bold text-slate-700 mb-3 block">توزيع الطلاب حسب المراحل الدراسية</h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                  <span>المرحلة الابتدائية</span>
-                  <span>{students.filter(s => {
-                    const cls = classes.find(c => c.id === s.classId);
-                    return cls?.stage === 'primary';
-                  }).length} طالباً</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-sky-500 rounded-full" 
-                    style={{ width: `${(students.filter(s => classes.find(c => c.id === s.classId)?.stage === 'primary').length / Math.max(1, students.length)) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                  <span>المرحلة المتوسطة</span>
-                  <span>{students.filter(s => {
-                    const cls = classes.find(c => c.id === s.classId);
-                    return cls?.stage === 'middle';
-                  }).length} طالباً</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-emerald-500 rounded-full" 
-                    style={{ width: `${(students.filter(s => classes.find(c => c.id === s.classId)?.stage === 'middle').length / Math.max(1, students.length)) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                  <span>المرحلة الثانوية</span>
-                  <span>{students.filter(s => {
-                    const cls = classes.find(c => c.id === s.classId);
-                    return cls?.stage === 'high';
-                  }).length} طالباً</span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-purple-500 rounded-full" 
-                    style={{ width: `${(students.filter(s => classes.find(c => c.id === s.classId)?.stage === 'high').length / Math.max(1, students.length)) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
+          <div className="mt-4 space-y-1">
+            <span className="block text-slate-400 text-[10px] font-bold">إجمالي الطلاب المقيدين</span>
+            <h3 className="text-3xl font-extrabold text-[#0F4C81] tracking-tight">{totalStudents} <span className="text-xs text-slate-400 font-medium">طلاب</span></h3>
           </div>
         </div>
 
-        {/* Left column: Security Logs & System info */}
-        <div className="space-y-6">
-          {/* Active school config info */}
-          <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 transform translate-x-3 -translate-y-3 opacity-10">
-              <Database className="w-40 h-40" />
-            </div>
-            <div className="relative z-10 space-y-4">
-              <h3 className="font-bold text-lg font-sans border-b border-slate-700 pb-2 flex items-center gap-1.5 text-white">
-                <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                ملخص أمان النظام المحلي
-              </h3>
-              <div className="space-y-2 text-xs font-mono text-slate-300">
-                <div className="flex justify-between">
-                  <span>محرك قواعد البيانات:</span>
-                  <span className="text-emerald-400 font-semibold">SQLite Embedded</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>نوع الاتصال:</span>
-                  <span className="text-white">ذاكرة دائمة (localStorage Async)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>إجمالي العمليات المدققة:</span>
-                  <span className="text-white">{auditLogs.length} عملية</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>المستخدم النشط:</span>
-                  <span className="text-yellow-400 font-semibold">{currentUser?.username} ({currentUser?.role})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>التأريخ المحلي للسيفر:</span>
-                  <span className="text-white">جون 2026</span>
-                </div>
-              </div>
-              <div className="pt-2">
-                <div className="bg-slate-800/80 rounded-lg p-3 text-slate-300 text-xs border border-slate-700/50">
-                  <span className="font-bold text-white block mb-0.5">💡 إرشادات ترحيل قاعدة البيانات:</span>
-                  يمكنك في أي وقت تحميل ملف النسخة الاحتياطية SQL وتركيبها مباشرة على سيرفر SQLite الفعلي أو أي محرك SQL محلي.
-                </div>
-              </div>
-            </div>
+        {/* Card 2: Teachers */}
+        <div className="bg-white rounded-2xl border border-slate-150 p-5 shadow-xs hover:shadow-sm transition-all duration-200 font-sans">
+          <div className="flex items-start justify-between">
+            <span className="text-[32px]">👨‍🏫</span>
+            <span className="inline-flex items-center gap-0.5 text-[9px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+              استقرار تام
+            </span>
           </div>
-
-          {/* Audit Trail quick feed */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xs font-bold text-slate-700 tracking-wider uppercase block">سجل التدقيق المحلي (العمليات الأخيرة)</h3>
-              <button onClick={() => onNavigate('users')} className="text-[11px] font-semibold text-sky-600 hover:underline">عرض الكل</button>
-            </div>
-            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-              {auditLogs.slice(0, 5).map((log) => (
-                <div key={log.id} className="text-xs border-r-2 border-slate-200 pr-2.5 py-0.5 space-y-0.5">
-                  <div className="flex justify-between">
-                    <span className="font-bold text-slate-700">{log.action}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{new Date(log.timestamp).toLocaleTimeString('ar-SA')}</span>
-                  </div>
-                  <p className="text-slate-500 line-clamp-1">{log.details}</p>
-                  <p className="text-[10px] text-slate-400 font-semibold">{log.username} (صلاحية محلية)</p>
-                </div>
-              ))}
-              {auditLogs.length === 0 && (
-                <div className="text-center py-6 text-slate-400 text-xs text-rtl">لا توجد عمليات مسجلة باللوج حالياً.</div>
-              )}
-            </div>
+          <div className="mt-4 space-y-1">
+            <span className="block text-slate-400 text-[10px] font-bold">الكادر التعليمي والتربوي</span>
+            <h3 className="text-3xl font-extrabold text-[#0F4C81] tracking-tight">{totalTeachers} <span className="text-xs text-slate-400 font-medium">معلماً</span></h3>
           </div>
+        </div>
 
+        {/* Card 3: Classes */}
+        <div className="bg-white rounded-2xl border border-slate-150 p-5 shadow-xs hover:shadow-sm transition-all duration-200">
+          <div className="flex items-start justify-between">
+            <span className="text-[32px]">🏫</span>
+            <span className="inline-flex items-center gap-0.5 text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+              +1 فصل إضافي
+            </span>
+          </div>
+          <div className="mt-4 space-y-1">
+            <span className="block text-slate-400 text-[10px] font-bold">إجمالي الصفوف والشعب</span>
+            <h3 className="text-3xl font-extrabold text-[#0F4C81] tracking-tight">{totalClasses} <span className="text-xs text-slate-400 font-medium">شعبة</span></h3>
+          </div>
+        </div>
+
+        {/* Card 4: Daily Attendance */}
+        <div className="bg-white rounded-2xl border border-slate-150 p-5 shadow-xs hover:shadow-sm transition-all duration-200 font-sans">
+          <div className="flex items-start justify-between">
+            <span className="text-[32px]">📅</span>
+            <span className="inline-flex items-center gap-0.5 text-[9px] bg-[#0F8A5F]/10 text-[#0F8A5F] px-2 py-0.5 rounded-full font-bold">
+              +1.8% انضباط ملموس
+            </span>
+          </div>
+          <div className="mt-4 space-y-1">
+            <span className="block text-[#0F8A5F] text-[10px] font-bold">نسبة الحضور والانضباط اليوم</span>
+            <h3 className="text-3xl font-extrabold text-[#0F8A5F] tracking-tight">{attendanceRate}%</h3>
+          </div>
+        </div>
+
+        {/* Card 5: Fees Collected */}
+        <div className="bg-white rounded-2xl border border-slate-150 p-5 shadow-xs hover:shadow-sm transition-all duration-200">
+          <div className="flex items-start justify-between">
+            <span className="text-[32px]">💰</span>
+            <span className="inline-flex items-center gap-0.5 text-[9px] bg-yellow-50 text-yellow-800 border border-yellow-100 px-2 py-0.5 rounded-full font-bold">
+              +15.3% مساهمة سنوية
+            </span>
+          </div>
+          <div className="mt-4 space-y-1">
+            <span className="block text-slate-400 text-[10px] font-bold">الرسوم والمساهمات المحصلة</span>
+            <h3 className="text-3xl font-extrabold text-[#D4A017] tracking-tight">{totalCollected.toLocaleString()} <span className="text-xs font-semibold">ريال</span></h3>
+          </div>
         </div>
 
       </div>
 
-      {/* Financial Income Ledger snapshot */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
-          <DollarSign className="w-5 h-5 text-emerald-500" />
-          سندات القبض الأخيرة وعقود التحصيل
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-right text-slate-600">
-            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-100">
-              <tr>
-                <th className="py-3 px-4 font-sans text-xs">رقم المرجع</th>
-                <th className="py-3 px-4 font-sans text-xs">اسم الطالب</th>
-                <th className="py-3 px-4 font-sans text-xs">نوع الرسم المستحق</th>
-                <th className="py-3 px-4 font-sans text-xs">المبلغ المستلم</th>
-                <th className="py-3 px-4 font-sans text-xs">تاريخ التحصيل</th>
-                <th className="py-3 px-4 font-sans text-xs">طريقة الاستلام</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-600">
-              {payments.slice(0, 5).map((p) => {
-                const std = students.find(s => s.id === p.studentId);
-                const fee = mockDb.getFeeTypes().find(f => f.id === p.feeTypeId);
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4 font-mono text-slate-800 text-xs font-semibold">{p.referenceNumber}</td>
-                    <td className="py-3 px-4 font-medium">{std?.name || 'طالب مجهول'}</td>
-                    <td className="py-3 px-4 text-xs text-slate-500">{fee?.name || 'نوع مجهول'}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-600">{p.amountPaid.toLocaleString()} ريال</td>
-                    <td className="py-3 px-4 text-xs font-mono">{p.paymentDate}</td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                        p.paymentMethod === 'bank_transfer' ? 'bg-indigo-50 text-indigo-700' :
-                        p.paymentMethod === 'card' ? 'bg-sky-50 text-sky-700' : 'bg-amber-50 text-amber-700'
-                      }`}>
-                        {p.paymentMethod === 'bank_transfer' ? 'تحويل بنكي' :
-                         p.paymentMethod === 'card' ? 'حساب بطاقة شبكة' : 'نقد كاش'}
+      {/* Middle Sections: Right (Today's Classes) and Left (Attendance statistics chart) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Right Section: Today's classes */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#0F4C81]" />
+              جدول توزيع الحصص الدراسية اليوم
+            </h2>
+            <p className="text-slate-400 text-xs mt-0.5">الحصص الحالية والدروس القائمة اليوم في مجمع المنارة التعليمي</p>
+          </div>
+
+          <div className="overflow-x-auto text-right">
+            <table className="w-full text-xs text-slate-600">
+              <thead className="bg-[#0F4C81]/5 border-b border-[#0F4C81]/10 text-[#0F4C81] font-bold">
+                <tr>
+                  <th className="py-2.5 px-3 text-right">رقم المرجعالحصة</th>
+                  <th className="py-2.5 px-3 text-right">الفصل والشعبة</th>
+                  <th className="py-2.5 px-3 text-right">المادة والمنهج</th>
+                  <th className="py-2.5 px-3 text-right">المعلم المعتمد</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {displayPeriods.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-3">
+                      <span className="inline-flex w-6 h-6 bg-[#0F4C81]/10 text-[#0F4C81] items-center justify-center rounded-md font-bold font-mono">
+                        {p.periodNumber}
                       </span>
                     </td>
+                    <td className="py-3 px-3 text-slate-800 font-bold">{p.className}</td>
+                    <td className="py-3 px-3 text-slate-600">{p.subjectName}</td>
+                    <td className="py-3 px-3 text-[#0F8A5F]">{p.teacherName}</td>
                   </tr>
-                );
-              })}
-              {payments.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-400 text-xs">لم يتم تقييد أو تحصيل أي مبالغ مالية إلى حد الآن.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="pt-2 border-t border-slate-50">
+            <button 
+              type="button"
+              onClick={() => onNavigate('academic')}
+              className="w-full text-center text-xs font-bold text-[#0F4C81] hover:text-[#0F4C81]/90 bg-slate-50 py-2 rounded-xl border border-slate-150 transition"
+            >
+              عرض كامل الجداول الأكاديمية والخطط الأسبوعية
+            </button>
+          </div>
+        </div>
+
+        {/* Left Section: Attendance Statistics (Pie Chart) */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <CalendarCheck2 className="w-5 h-5 text-[#0F8A5F]" />
+              التقرير الدائري لحضور وانضباط الطلاب
+            </h2>
+            <p className="text-slate-400 text-xs mt-0.5">توزيع الطلاب الحاضرين والغائبين الموثق في السجلات لهذا اليوم</p>
+          </div>
+
+          {/* Pie Chart display inside Recharts Container */}
+          <div className="h-[200px] flex items-center justify-center relative font-sans">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={75}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `${value} طلاب`} />
+                <Legend iconSize={8} wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
+              </PieChart>
+            </ResponsiveContainer>
+            
+            {/* Absolute percentage overlay in the center */}
+            <div className="absolute flex flex-col items-center justify-center pt-2">
+              <span className="text-2xl font-black text-[#0F8A5F] tracking-tight">{attendanceRate}%</span>
+              <span className="text-[9px] text-slate-400 font-bold">نسبة الحضور</span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-slate-50 font-sans">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-400 font-bold">آخر قيد غياب:</span>
+              <span className="text-slate-800 font-extrabold">{latestDate}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Section: Latest Activities */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+        <div className="w-full flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <FileCheck2 className="w-5 h-5 text-[#D4A017]" />
+              آخر الأنشطة والاعتمادات الرسمية
+            </h2>
+            <p className="text-slate-400 text-xs mt-0.5">العمليات الأخيرة المجراة في دوائر التسجيل والكنترول والمالية بالمنارة</p>
+          </div>
+          <span className="text-[10px] bg-[#D4A017]/15 text-[#D4A017] px-3 py-1 rounded-full font-bold">مجمع منارة اليمن التعليمي</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" id="dashboard-activities">
+          {activities.map((act) => (
+            <div key={act.id} className="relative bg-slate-50 border border-slate-150 hover:border-slate-200 p-5 rounded-2xl transition duration-150 flex flex-col justify-between space-y-3">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full font-bold">{act.tag}</span>
+                  <span className="text-[10px] text-slate-400 font-bold">{act.time}</span>
+                </div>
+                <h4 className="text-slate-800 font-extrabold font-sans text-xs leading-relaxed pt-1.5 flex items-center gap-1">
+                  <span>{act.type === 'student' ? '📝' : act.type === 'result' ? '🏆' : '💰'}</span>
+                  <span>{act.title}</span>
+                </h4>
+                <p className="text-slate-500 font-semibold text-[11px] leading-relaxed pt-1 line-clamp-3">{act.desc}</p>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-[#0F4C81] font-bold">
+                <CheckCircle className="w-3.5 h-3.5 text-[#0F8A5F] shrink-0" />
+                <span>العملية مسجلة في الذاكرة بنجاح</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
     </div>
   );
 }

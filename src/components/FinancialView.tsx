@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useCustomPrint } from '../hooks/useCustomPrint';
 import { mockDb } from '../db/mockDb';
 import { Student, FeeType, FeePayment } from '../types';
 import { 
@@ -18,7 +18,9 @@ import {
   Users,
   CreditCard,
   Building,
-  AlertCircle
+  AlertCircle,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface FinancialViewProps {
@@ -32,9 +34,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const receiptPrintRef = useRef<HTMLDivElement>(null);
-  const handlePrintReceipt = useReactToPrint({
-    contentRef: receiptPrintRef,
-  });
+  const handlePrintReceipt = useCustomPrint(receiptPrintRef);
 
   // Modals status
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
@@ -123,6 +123,34 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
     return std?.name.includes(searchQuery) || p.referenceNumber.includes(searchQuery);
   });
 
+  const handleExportPayments = () => {
+    let csvContent = `رقم مرجع السند,اسم الطالب الوطني,بند الرسم,تأريخ التحصيل,المبلغ المورد (ريال),طريقة التحصيل,الملاحظات والتحقق\n`;
+    filteredPayments.forEach(p => {
+      const std = students.find(s => s.id === p.studentId);
+      const fType = feeTypes.find(ft => ft.id === p.feeTypeId);
+      const methodText = p.paymentMethod === 'cash' ? 'نقدي (كاش)' :
+                        p.paymentMethod === 'card' ? 'شبكة / بطاقة' : 'تحويل بنكي';
+      csvContent += `"${p.referenceNumber}","${std?.name || 'مجهول'}","${fType?.name || 'مساهمة عامة'}","${p.paymentDate}",${p.amountPaid},"${methodText}","${(p.notes || '').replace(/"/g, '""')}"\n`;
+    });
+
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `دفتر_سندات_المقبوضات_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    mockDb.addAuditLog(
+      currentUser.id,
+      currentUser.username,
+      'تصدير دفتر الحسابات والسندات الموردة',
+      `تصدير كشف بـ (${filteredPayments.length}) إيصال قبض ورسوم مسددة للـ Excel`
+    );
+  };
+
   return (
     <div className="space-y-6" id="financial-tab-view">
       
@@ -167,19 +195,28 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
               </h2>
               <p className="text-slate-500 text-xs mt-0.5 font-sans">تتبع الإيصالات المسددة من أولياء الأمور وحفظ الإثباتات الدفترية بلائحة SQLite</p>
             </div>
-            <button 
-              onClick={() => {
-                if(students.length===0){
-                  alert("الرجاء تسجيل الطلاب مسبقا!");
-                  return;
-                }
-                setIsReceiptOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition"
-            >
-              <Plus className="w-4 h-4" />
-              تحصيل سند قبض جديد
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button 
+                onClick={handleExportPayments}
+                className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition hover:cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-slate-400" />
+                تصدير السندات للـ Excel
+              </button>
+              <button 
+                onClick={() => {
+                  if(students.length===0){
+                    alert("الرجاء تسجيل الطلاب مسبقا!");
+                    return;
+                  }
+                  setIsReceiptOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition"
+              >
+                <Plus className="w-4 h-4" />
+                تحصيل سند قبض جديد
+              </button>
+            </div>
           </div>
 
           {/* Search ledger */}
