@@ -251,147 +251,38 @@ class LocalSQLiteEngine {
 
   private loadFromStorage() {
     try {
-      const isNewYemeniVersion = localStorage.getItem('manara_yemeni_v17');
-      if (!isNewYemeniVersion) {
-        localStorage.clear();
-        localStorage.setItem('manara_yemeni_v17', 'true');
-      }
-
-      const getOrSeed = <T>(key: string, defaultVal: T): T => {
-        const stored = localStorage.getItem(`manara_db_${key}`);
-        if (stored) {
-          return JSON.parse(stored);
-        } else {
-          localStorage.setItem(`manara_db_${key}`, JSON.stringify(defaultVal));
-          return defaultVal;
+      // Sync XMLHttpRequest to obtain real database contents from backend Express SQLite server!
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/api/db/get', false); // true synchronicity perfectly preserving 15+ React modules
+      xhr.send(null);
+      if (xhr.status === 200) {
+        const res = JSON.parse(xhr.responseText);
+        if (res.success && res.data) {
+          const d = res.data;
+          this.users = d.users || [];
+          this.auditLogs = d.audit_logs || [];
+          this.parents = d.parents || [];
+          this.students = d.students || [];
+          this.teachers = d.teachers || [];
+          this.classrooms = d.classrooms || [];
+          this.subjects = d.subjects || [];
+          this.schedules = d.schedules || [];
+          this.attendances = d.attendance || [];
+          this.grades = d.grades || [];
+          this.feeTypes = d.fee_types || [];
+          this.feePayments = d.fee_payments || [];
+          this.behaviorEvaluations = d.behavior_evaluations || [];
+          this.settings = d.settings || DEFAULT_SETTINGS;
+          console.log('[DEBUG] Real SQLite data cache successfully initialized in client memory!');
+          return;
         }
-      };
-
-      this.users = getOrSeed('users', DEFAULT_USERS);
-      this.auditLogs = getOrSeed('audit_logs', DEFAULT_AUDIT_LOGS);
-      this.parents = getOrSeed('parents', DEFAULT_PARENTS);
-      this.classrooms = getOrSeed('classrooms', DEFAULT_CLASSROOMS);
-      this.students = getOrSeed('students', DEFAULT_STUDENTS);
-      this.teachers = getOrSeed('teachers', DEFAULT_TEACHERS);
-      this.subjects = getOrSeed('subjects', DEFAULT_SUBJECTS);
-      this.schedules = getOrSeed('schedules', DEFAULT_SCHEDULES);
-      this.attendances = getOrSeed('attendances', DEFAULT_ATTENDANCES);
-      this.grades = getOrSeed('grades', DEFAULT_GRADES);
-      this.feeTypes = getOrSeed('fee_types', DEFAULT_FEE_TYPES);
-      this.feePayments = getOrSeed('fee_payments', DEFAULT_FEE_PAYMENTS);
-      this.behaviorEvaluations = getOrSeed('behavior_evaluations', []);
-      this.settings = getOrSeed('settings', DEFAULT_SETTINGS);
-
-      // Dynamically generate default grades and behavior evaluations for all students across semesters if empty
-      if (this.grades.length === 0) {
-        const generatedGrades: Grade[] = [];
-        const generatedBehaviors: BehaviorEvaluation[] = [];
-        
-        this.students.forEach((st, idx) => {
-          const cls = this.classrooms.find(c => c.id === st.classId);
-          if (!cls) return;
-
-          const stageSubjects = this.subjects.filter(sub => sub.stage === cls.stage);
-          
-          stageSubjects.forEach(sub => {
-            // Generate a seed-based realistic grade so results are organic but stable
-            const hash = (st.id + sub.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            
-            // First Semester (الفصل الدراسي الأول)
-            const cw1 = 15 + (hash % 6); // 15 - 20 (Coursework max 20)
-            const fn1 = 20 + (hash % 31); // 20 - 50 (Final Exam max 50)
-            const tot1 = cw1 + fn1; // (Total max 70, or we normalize to 100)
-            
-            generatedGrades.push({
-              id: `grd-${st.id}-${sub.id}-sem1`,
-              studentId: st.id,
-              subjectId: sub.id,
-              examName: 'الفصل الدراسي الأول',
-              examDate: '2026-01-15',
-              courseworkGrade: cw1,
-              finalExamGrade: fn1,
-              totalGrade: tot1,
-              resultStatus: tot1 >= sub.minGrade ? 'pass' : 'fail'
-            });
-
-            // Second Semester (الفصل الدراسي الثاني)
-            const cw2 = 14 + ((hash + 3) % 7); // 14 - 20
-            const fn2 = 25 + ((hash + 7) % 26); // 25 - 50
-            const tot2 = cw2 + fn2;
-            
-            generatedGrades.push({
-              id: `grd-${st.id}-${sub.id}-sem2`,
-              studentId: st.id,
-              subjectId: sub.id,
-              examName: 'الفصل الدراسي الثاني',
-              examDate: '2026-05-18',
-              courseworkGrade: cw2,
-              finalExamGrade: fn2,
-              totalGrade: tot2,
-              resultStatus: tot2 >= sub.minGrade ? 'pass' : 'fail'
-            });
-          });
-
-          // Generate behavior record
-          const finalScore = 90 + (idx % 11);
-          generatedBehaviors.push({
-            id: `beh-${st.id}`,
-            studentId: st.id,
-            academicYear: this.settings.currentAcademicYear,
-            semester: 'first',
-            marks: {
-              '1': 5, '2': 5, '3': 5, '4': 5, '5': 4, '6': 5, '7': 5, '8': 4, '9': 5, '10': 5,
-              '11': 5, '12': 5, '13': 5, '14': 5, '15': 5, '16': 4, '17': 5, '18': 5, '19': 5, '20': 5
-            },
-            totalMark: finalScore,
-            behaviorGrade: finalScore >= 95 ? 'ممتاز' : 'جيد جداً',
-            evaluatorId: 'usr-admin',
-            date: '2026-01-15',
-            notes: 'طالب منضبط وملتزم بالتعليمات ومثالي الأخلاق داخل المدرسة وخارجها.'
-          });
-        });
-
-        this.grades = generatedGrades;
-        this.behaviorEvaluations = generatedBehaviors;
-        this.saveToStorage('grades', this.grades);
-        this.saveToStorage('behavior_evaluations', this.behaviorEvaluations);
       }
-
     } catch (e) {
-      console.error('Error initializing LocalStorage Database engine, resorting to absolute memory:', e);
-      this.resetToDefaults();
+      console.error('[SQLITE CLIENT ERROR] Failed to fetch SQLITE data. Falling back to in-memory/local:', e);
     }
-  }
 
-  private saveToStorage(key: string, data: any) {
-    try {
-      localStorage.setItem(`manara_db_${key}`, JSON.stringify(data));
-    } catch (e) {
-      console.error(`Failed to save key ${key} to disk storage:`, e);
-    }
-  }
-
-  private saveAll() {
-    this.saveToStorage('users', this.users);
-    this.saveToStorage('audit_logs', this.auditLogs);
-    this.saveToStorage('parents', this.parents);
-    this.saveToStorage('students', this.students);
-    this.saveToStorage('teachers', this.teachers);
-    this.saveToStorage('classrooms', this.classrooms);
-    this.saveToStorage('subjects', this.subjects);
-    this.saveToStorage('schedules', this.schedules);
-    this.saveToStorage('attendances', this.attendances);
-    this.saveToStorage('grades', this.grades);
-    this.saveToStorage('fee_types', this.feeTypes);
-    this.saveToStorage('fee_payments', this.feePayments);
-    this.saveToStorage('behavior_evaluations', this.behaviorEvaluations);
-    this.settings = this.settings;
-    this.saveToStorage('settings', this.settings);
-  }
-
-  public resetToDefaults() {
+    // fallback in case of connection absence / offline preview testing before start
     this.users = [...DEFAULT_USERS];
-    this.auditLogs = [...DEFAULT_AUDIT_LOGS];
     this.parents = [...DEFAULT_PARENTS];
     this.classrooms = [...DEFAULT_CLASSROOMS];
     this.students = [...DEFAULT_STUDENTS];
@@ -404,8 +295,93 @@ class LocalSQLiteEngine {
     this.feePayments = [...DEFAULT_FEE_PAYMENTS];
     this.behaviorEvaluations = [];
     this.settings = { ...DEFAULT_SETTINGS };
-    this.saveAll();
-    this.addAuditLog('usr-1', 'admin', 'إعادة ضبط قاعدة البيانات', 'تم استعادة تهيئة المصنع وجميع البيانات العينية التجريبية');
+  }
+
+  private saveToStorage(key: string, data: any) {
+    // 1. Maintain local in-memory representation so UI does not stutter
+    localStorage.setItem(`manara_db_${key}`, JSON.stringify(data));
+
+    // 2. Map standard frontend key names into SQLite table names
+    let sqlTable = key;
+    if (key === 'attendances') sqlTable = 'attendance';
+    if (key === 'fee_types') sqlTable = 'fee_types';
+    if (key === 'fee_payments') sqlTable = 'fee_payments';
+    if (key === 'behavior_evaluations') sqlTable = 'behavior_evaluations';
+    if (key === 'audit_logs') sqlTable = 'audit_logs';
+
+    // 3. Replicate instantly to back-end server.ts SQLite database 
+    if (key === 'settings') {
+      fetch('/api/db/save-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: data })
+      }).catch(err => console.error('[SQLITE PERSISTENCE ERROR] Settings replication failed:', err));
+    } else {
+      fetch('/api/db/save-table', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: sqlTable, rows: data })
+      }).catch(err => console.error(`[SQLITE PERSISTENCE ERROR] Table ${sqlTable} replication failed:`, err));
+    }
+  }
+
+  private saveAll() {
+    this.saveToStorage('users', this.users);
+    this.saveToStorage('parents', this.parents);
+    this.saveToStorage('students', this.students);
+    this.saveToStorage('teachers', this.teachers);
+    this.saveToStorage('classrooms', this.classrooms);
+    this.saveToStorage('subjects', this.subjects);
+    this.saveToStorage('schedules', this.schedules);
+    this.saveToStorage('attendances', this.attendances);
+    this.saveToStorage('grades', this.grades);
+    this.saveToStorage('fee_types', this.feeTypes);
+    this.saveToStorage('fee_payments', this.feePayments);
+    this.saveToStorage('behavior_evaluations', this.behaviorEvaluations);
+    this.saveToStorage('settings', this.settings);
+    this.saveToStorage('audit_logs', this.auditLogs);
+  }
+
+  public resetToDefaults() {
+    fetch('/api/db/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonDump: {
+        users: DEFAULT_USERS,
+        parents: DEFAULT_PARENTS,
+        classrooms: DEFAULT_CLASSROOMS,
+        students: DEFAULT_STUDENTS,
+        teachers: DEFAULT_TEACHERS,
+        subjects: DEFAULT_SUBJECTS,
+        schedules: DEFAULT_SCHEDULES,
+        attendance: DEFAULT_ATTENDANCES,
+        grades: DEFAULT_GRADES,
+        fee_types: DEFAULT_FEE_TYPES,
+        fee_payments: DEFAULT_FEE_PAYMENTS,
+        behavior_evaluations: [],
+        settings: DEFAULT_SETTINGS,
+        audit_logs: DEFAULT_AUDIT_LOGS
+      }})
+    }).then(() => {
+      this.loadFromStorage();
+      location.reload();
+    }).catch(err => {
+      console.error('Failed to reset to defaults on backend:', err);
+      this.users = [...DEFAULT_USERS];
+      this.parents = [...DEFAULT_PARENTS];
+      this.classrooms = [...DEFAULT_CLASSROOMS];
+      this.students = [...DEFAULT_STUDENTS];
+      this.teachers = [...DEFAULT_TEACHERS];
+      this.subjects = [...DEFAULT_SUBJECTS];
+      this.schedules = [...DEFAULT_SCHEDULES];
+      this.attendances = [...DEFAULT_ATTENDANCES];
+      this.grades = [...DEFAULT_GRADES];
+      this.feeTypes = [...DEFAULT_FEE_TYPES];
+      this.feePayments = [...DEFAULT_FEE_PAYMENTS];
+      this.behaviorEvaluations = [];
+      this.settings = { ...DEFAULT_SETTINGS };
+      this.saveAll();
+    });
   }
 
   // SESSION CONTROL

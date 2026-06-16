@@ -5,6 +5,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { mockDb } from '../db/mockDb';
+
+declare global {
+  interface Window {
+    electronAPI?: {
+      sendNotification: (arg: { title?: string; text: string }) => void;
+      saveFileDialog: (arg: { content: string; defaultFilename: string; encoding?: string }) => Promise<{ success: boolean; filePath?: string; cancelled?: boolean; error?: string }>;
+      openFileDialog: () => Promise<{ success: boolean; content?: string; filePath?: string; cancelled?: boolean; error?: string }>;
+      printDocument: (options?: { landscape?: boolean; deviceName?: string }) => Promise<{ success: boolean; error?: string }>;
+      getSystemInfo: () => Promise<{ platform: string; arch: string; version: string; userDataPath: string; isPackaged: boolean }>;
+    };
+  }
+}
+
 import {
   Database,
   Printer,
@@ -406,25 +419,41 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
     }
   }, [printSelectedClass, students]);
 
-  const triggerDirectPrint = () => {
+  const triggerDirectPrint = async () => {
     if (printAreaRef.current) {
-      const printContents = printAreaRef.current.innerHTML;
-      const originalContents = document.body.innerHTML;
-
-      // Custom window print emulation safely and elegantly
-      const style = document.createElement('style');
-      style.innerHTML = `
-        @media print {
-          body { direction: rtl; font-family: 'Inter', sans-serif; background: white; color: black; padding: 20px; }
-          .no-print { display: none !important; }
-          .print-card { border: 2px solid #ddd; padding: 20px; page-break-after: always; }
-          .watermark { opacity: 0.1 !important; }
+      if (window.electronAPI) {
+        showToast('جاري تحضير المستند وإرساله إلى نافذة طابعة ويندوز مباشرة...', 'info');
+        const res = await window.electronAPI.printDocument({
+          landscape: printDocType === 'attendance-sheet'
+        });
+        if (res.success) {
+          showToast('تمت المباشرة بطباعة التقرير بنجاح عبر النظام المكتبي المدمج!', 'success');
+          window.electronAPI.sendNotification({
+            title: 'تم إصدار كشف الطباعة',
+            text: 'تمت معالجة أمر الطباعة بنجاح بنسبة ١٠٠٪ في طابعة مجمع المنارة.'
+          });
+        } else {
+          showToast(`فشل أثناء إرسال الكشف لطابعة ويندوز: ${res.error}`, 'error');
         }
-      `;
-      document.head.appendChild(style);
-      window.print();
-      document.head.removeChild(style);
-      showToast('أرسل التطبيق الأمر بنجاح إلى طابعة Windows المستهدفة!', 'success');
+      } else {
+        const printContents = printAreaRef.current.innerHTML;
+        const originalContents = document.body.innerHTML;
+
+        // Custom window print emulation safely and elegantly
+        const style = document.createElement('style');
+        style.innerHTML = `
+          @media print {
+            body { direction: rtl; font-family: 'Inter', sans-serif; background: white; color: black; padding: 20px; }
+            .no-print { display: none !important; }
+            .print-card { border: 2px solid #ddd; padding: 20px; page-break-after: always; }
+            .watermark { opacity: 0.1 !important; }
+          }
+        `;
+        document.head.appendChild(style);
+        window.print();
+        document.head.removeChild(style);
+        showToast('أرسل التطبيق الأمر بنجاح إلى طابعة Windows المستهدفة!', 'success');
+      }
     }
   };
 
@@ -453,45 +482,79 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
     { id: 'b-3', type: 'يدوي تفريغي', format: 'SQL Script (.sql)', date: '2026-06-14 04:30 PM', size: '280 KB', status: 'تم التنزيل محلياً' },
   ]);
 
-  const triggerExportJSON = () => {
+  const triggerExportJSON = async () => {
     try {
       const json = mockDb.exportBackupJSON();
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `m_school_backup_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (window.electronAPI) {
+        showToast('جاري استرجاع نسخة احتياطية محلية للحفظ المباشر...', 'info');
+        const res = await window.electronAPI.saveFileDialog({
+          content: json,
+          defaultFilename: `m_school_backup_${new Date().toISOString().split('T')[0]}.json`
+        });
+        if (res.success) {
+          setBackupLogs(prev => [
+            { id: `b-${Date.now()}`, type: 'مكتبي (حفظ مباشر)', format: 'JSON الشامل', date: new Date().toLocaleString(), size: `${(json.length / 1024).toFixed(1)} KB`, status: 'مؤمن ومحفوظ' },
+            ...prev
+          ]);
+          showToast('تم حفظ الحزمة المخلدة في القرص الصلب بنجاح بنسبة ١٠٠٪!', 'success');
+        } else if (!res.cancelled) {
+          showToast(`خطأ بالحفظ: ${res.error}`, 'error');
+        }
+      } else {
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `m_school_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      setBackupLogs(prev => [
-        { id: `b-${Date.now()}`, type: 'يدوي', format: 'JSON الشامل', date: new Date().toLocaleString(), size: `${(json.length / 1024).toFixed(1)} KB`, status: 'تمت تصفية التنزيل السريع' },
-        ...prev
-      ]);
-      showToast('تم تصدير وحفظ نسخة البيانات الكاملة JSON بنجاح!', 'success');
+        setBackupLogs(prev => [
+          { id: `b-${Date.now()}`, type: 'يدوي', format: 'JSON الشامل', date: new Date().toLocaleString(), size: `${(json.length / 1024).toFixed(1)} KB`, status: 'تمت تصفية التنزيل السريع' },
+          ...prev
+        ]);
+        showToast('تم تصدير وحفظ نسخة البيانات الكاملة JSON بنجاح!', 'success');
+      }
     } catch (e: any) {
       showToast(`فشل تصدير الكتل: ${e.message}`, 'error');
     }
   };
 
-  const triggerExportSQL = () => {
+  const triggerExportSQL = async () => {
     try {
       const sql = mockDb.exportSQLBackup();
-      const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `m_school_sqlite_dump.sql`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (window.electronAPI) {
+        showToast('جاري تصدير ومطابقة سكربت SQLite التأسيسي...', 'info');
+        const res = await window.electronAPI.saveFileDialog({
+          content: sql,
+          defaultFilename: `m_school_sqlite_dump.sql`
+        });
+        if (res.success) {
+          setBackupLogs(prev => [
+            { id: `b-${Date.now()}`, type: 'مكتبي (سكربت SQL)', format: 'SQL script', date: new Date().toLocaleString(), size: `${(sql.length / 1024).toFixed(1)} KB`, status: 'مكتوب بالقرص' },
+            ...prev
+          ]);
+          showToast('تم حفظ الملف التأسيسي وصيانته بالقرص المحلي بنجاح!', 'success');
+        } else if (!res.cancelled) {
+          showToast(`فشل أثناء الكتابة للقرص: ${res.error}`, 'error');
+        }
+      } else {
+        const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `m_school_sqlite_dump.sql`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      setBackupLogs(prev => [
-        { id: `b-${Date.now()}`, type: 'يدوي مفرغ', format: 'SQL script', date: new Date().toLocaleString(), size: `${(sql.length / 1024).toFixed(1)} KB`, status: 'تم استخلاص سكربت SQLite' },
-        ...prev
-      ]);
-      showToast('تم تنزيل سكربت SQLite الشامل لتأسيس وصيانة الخوادم المحلية!', 'success');
+        setBackupLogs(prev => [
+          { id: `b-${Date.now()}`, type: 'يدوي مفرغ', format: 'SQL script', date: new Date().toLocaleString(), size: `${(sql.length / 1024).toFixed(1)} KB`, status: 'تم استخلاص سكربت SQLite' },
+          ...prev
+        ]);
+        showToast('تم تنزيل سكربت SQLite الشامل لتأسيس وصيانة الخوادم المحلية!', 'success');
+      }
     } catch (e: any) {
       showToast(`فشل في بناء هيكلة السكربت: ${e.message}`, 'error');
     }
@@ -510,6 +573,27 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
       if (onRefreshAll) onRefreshAll();
     } else {
       showToast('تعذر استعادة الكود المدرج! تحقق من سلامة بناء ملف JSON وتوافقه مع معايير المنارة للدرجات.', 'error');
+    }
+  };
+
+  const triggerNativeOpenFile = async () => {
+    if (window.electronAPI) {
+      try {
+        showToast('جاري فتح مستكشف ملفات ويندوز...', 'info');
+        const res = await window.electronAPI.openFileDialog();
+        if (res.success && res.content) {
+          setRestoreJsonFile(res.content);
+          showToast(`تم تحميل وقراءة ملف النسخ الاحتياطي الإلكتروني بنجاح من: ${res.filePath}! لتنفيذ الاسترجاع، الرجاء النقر على زر "استعادة" أدناه.`, 'success');
+          window.electronAPI.sendNotification({
+            title: 'تم استرداد المستند الاحتياطي بنجاح',
+            text: `تم تحميل محتوى كشوفات الملف: ${res.filePath}`
+          });
+        } else if (!res.cancelled) {
+          showToast(`تعذر قراءة ملف النسخة: ${res.error}`, 'error');
+        }
+      } catch (e: any) {
+        showToast(`فشل استكشاف المستند: ${e.message}`, 'error');
+      }
     }
   };
 
@@ -1622,17 +1706,29 @@ pause`;
                 </div>
               </div>
 
-              {/* Paste local code JSON to instantly restore */}
+               {/* Paste local code JSON to instantly restore */}
               <div className="md:col-span-2 space-y-4 bg-slate-50 p-5 rounded-3xl border border-slate-100 text-xs flex flex-col justify-between">
-                <div>
-                  <h4 className="font-black text-slate-800 text-xs flex items-center gap-1.5">
-                    <Upload className="w-4.5 h-4.5 text-indigo-500" />
-                    استعادة كشكول الكشوفات فورا من ملف خارجي (Restore Point)
-                  </h4>
-                  <p className="text-[10.5px] text-slate-500 mt-1">يرجى قراءة وصيانة الملف، ثم لصق محتويات كود JSON المحمل لديك مسبقاً لإعادة دمج الكشوفات فورا:</p>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-b border-slate-200/60 pb-3">
+                  <div>
+                    <h4 className="font-black text-slate-800 text-xs flex items-center gap-1.5">
+                      <Upload className="w-4.5 h-4.5 text-indigo-500" />
+                      استعادة كشكول الكشوفات فورا من ملف خارجي (Restore Point)
+                    </h4>
+                    <p className="text-[10.5px] text-slate-500 mt-1">يرجى قراءة وصيانة الملف، ثم لصق محتويات كود JSON المحمل لديك مسبقاً لإعادة دمج الكشوفات فورا:</p>
+                  </div>
+                  {window.electronAPI && (
+                    <button
+                      type="button"
+                      onClick={triggerNativeOpenFile}
+                      className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl transition shadow-sm text-[10.5px] cursor-pointer flex items-center gap-1.5 shrink-0"
+                    >
+                      <FolderOpen className="w-4 h-4 text-emerald-400" />
+                      استيراد ملف من القرص مباشرة
+                    </button>
+                  )}
                 </div>
 
-                <div className="space-y-3 mt-3">
+                <div className="space-y-3 mt-1">
                   <textarea
                     value={restoreJsonFile}
                     onChange={(e) => setRestoreJsonFile(e.target.value)}

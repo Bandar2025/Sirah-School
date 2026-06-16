@@ -1,0 +1,35 @@
+# Sirah School ERP - Electron Builder Release Configurations
+# Publisher: Bandr Solutions
+# Lead Architects: Bandr Qamlan & Rasheed Al-Mikhlafi
+# Location: Sana'a, Yemen
+
+appId: "com.bandrsolutions.sirahschoolerp"
+productName: "Sirah School ERP"
+copyright: "Copyright © 2026 Bandr Solutions"
+
+directories:
+  output: "release"
+  buildResources: "assets"
+
+win:
+  icon: "assets/icon.png"
+  target:
+    - target: "nsis"
+      arch:
+        - "x64"
+        - "ia32"
+    - target: "portable"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "Sirah School ERP"
+  installerIcon: "assets/icon.png"
+  uninstallerIcon: "assets/icon.png"
+  runAfterFinish: true
+  uninstallDisplayName: "Sirah School ERP - Uninstaller"
+  publish:
+    provider: "generic"
+    url: "https://updates.school.sirah.com/win"

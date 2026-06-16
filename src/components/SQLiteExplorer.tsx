@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { mockDb } from '../db/mockDb';
 import { 
   Database, 
@@ -15,7 +15,13 @@ import {
   Search, 
   RefreshCw,
   GitMerge,
-  HelpCircle
+  HelpCircle,
+  HardDrive,
+  Settings,
+  Wrench,
+  ShieldAlert,
+  Download,
+  Upload
 } from 'lucide-react';
 
 interface SQLiteExplorerProps {
@@ -23,7 +29,7 @@ interface SQLiteExplorerProps {
 }
 
 export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
-  const [activeTab, setActiveTab] = useState<'tables' | 'erd' | 'console'>('erd');
+  const [activeTab, setActiveTab] = useState<'tables' | 'erd' | 'console' | 'admin'>('erd');
   const [selectedTable, setSelectedTable] = useState<string>('students');
   const [sqlQuery, setSqlQuery] = useState<string>('SELECT * FROM students WHERE status = \'active\'');
   
@@ -33,8 +39,123 @@ export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
   const [consoleError, setConsoleError] = useState<string>('');
   const [consoleMessage, setConsoleMessage] = useState<string>('');
 
+  // Database manager states
+  const [dbInfo, setDbInfo] = useState<any | null>(null);
+  const [loadingDbInfo, setLoadingDbInfo] = useState<boolean>(false);
+  const [actionMessage, setActionMessage] = useState<string>('');
+  const [actionError, setActionError] = useState<string>('');
+
   const refreshData = () => {
     // dummy refresh trigger
+  };
+
+  // Fetch real SQLite DB file statistics from Server API
+  const fetchDbInfo = async () => {
+    setLoadingDbInfo(true);
+    setActionMessage('');
+    setActionError('');
+    try {
+      const response = await fetch('/api/db/info');
+      const res = await response.json();
+      if (res.success) {
+        setDbInfo(res);
+      } else {
+        setActionError(res.error || 'فشلت قراءة إحصاءات الملف.');
+      }
+    } catch (e: any) {
+      setActionError(`حدث خطأ أثناء التواصل مع الخادم: ${e.message}`);
+    } finally {
+      setLoadingDbInfo(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'admin') {
+      fetchDbInfo();
+    }
+  }, [activeTab]);
+
+  // Execute Repair DB (VACUUM & Integrity)
+  const handleRepairDb = async () => {
+    setActionMessage('');
+    setActionError('');
+    try {
+      const response = await fetch('/api/db/repair', { method: 'POST' });
+      const res = await response.json();
+      if (res.success) {
+        setActionMessage(`✓ بنية قاعدة البيانات سليمة (Integrity: ${res.integrity}). ${res.message}`);
+        await fetchDbInfo();
+      } else {
+        setActionError(res.error || 'فشلت محاولة إصلاح وضغط قاعدة البيانات.');
+      }
+    } catch (e: any) {
+      setActionError(`فشل إرسال طلب الإصلاح: ${e.message}`);
+    }
+  };
+
+  // Execute Backup DB copy
+  const handleBackupDb = async () => {
+    setActionMessage('');
+    setActionError('');
+    try {
+      const response = await fetch('/api/db/backup', { method: 'POST' });
+      const res = await response.json();
+      if (res.success) {
+        setActionMessage(`✓ تم نسخ وحفظ ملف قاعدة البيانات بنجاح في: ${res.backupFile}`);
+        await fetchDbInfo();
+      } else {
+        setActionError(res.error || 'فشلت محاولة إنشاء نسخة احتياطية للقرص.');
+      }
+    } catch (e: any) {
+      setActionError(`فشل عملية النسخ الاحتياطي: ${e.message}`);
+    }
+  };
+
+  // Execute Restore DB from JSON dump import file
+  const handleRestoreDb = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setActionMessage('');
+    setActionError('');
+
+    if (!window.confirm('🚨 تحذير أمني هام: ستقوم هذه العملية باستبدال الجداول الحالية بأكملها بالنسخة المستوردة. هل تريد الاستمرار وإعادة تشغيل التطبيق؟')) {
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+
+      const response = await fetch('/api/db/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonDump: parsed })
+      });
+      const res = await response.json();
+      if (res.success) {
+        setActionMessage(`✓ مبارك! تمت صيانة الجداول والمفاتيح بنجاح من الاستيراد الهيكلي. جارٍ إعادة تحميل النظام...`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        setActionError(res.error || 'فشلت معالجة الاسترداد من ملف النسخ.');
+      }
+    } catch (err: any) {
+      setActionError(`فشل قراءة وتحليل ملف Backup المرفق: ${err.message}`);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  // Helper formatting database file size nicely
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   // Get raw records based on selected table
@@ -64,79 +185,45 @@ export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
     return [];
   };
 
-  // Simulated SQL query parser inside our state manager (supporting simple SELECT queries)
-  const handleExecuteSQL = (e: React.FormEvent) => {
+  // Execute SQL statements directly on the real SQLite database server
+  const handleExecuteSQL = async (e: React.FormEvent) => {
     e.preventDefault();
     setConsoleError('');
     setConsoleResult(null);
     setConsoleMessage('');
 
-    const cleanQuery = sqlQuery.trim().replace(/\s+/g, ' ').toLowerCase();
-
-    if (!cleanQuery.startsWith('select')) {
-      setConsoleError('خطأ SQLite: محرك الاستعراض المستقل يدعم جمل الاستعلام SELECT فقط من أجل حماية اتساق المفاتيح الأجنبية وقواعد التوزيع!');
-      return;
-    }
-
     try {
-      // Crude parsing of "select * from <table>"
-      const fromIndex = cleanQuery.indexOf('from');
-      if (fromIndex === -1) {
-        setConsoleError('خطأ SQLite: بناء جملة SQL خاطئ! يفتقد للكلمة المفتاحية FROM لتبيين وجهة الجدول!');
+      const response = await fetch('/api/sqlite/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sql: sqlQuery })
+      });
+      const res = await response.json();
+      if (!response.ok || !res.success) {
+        setConsoleError(`خطأ في تنفيذ SQL: ${res.error || 'خطأ غير معروف في خادم SQLite علائقي'}`);
         return;
       }
 
-      const rest = cleanQuery.substring(fromIndex + 5).trim();
-      const tableNameAndFilters = rest.split(' ');
-      const tableName = tableNameAndFilters[0];
-
-      // Retrieve core data rows
-      let dataRows: any[] = [];
-      switch (tableName) {
-        case 'users': dataRows = mockDb.getUsers(); break;
-        case 'students': dataRows = mockDb.getStudents(); break;
-        case 'parents': dataRows = mockDb.getParents(); break;
-        case 'teachers': dataRows = mockDb.getTeachers(); break;
-        case 'classrooms': dataRows = mockDb.getClassrooms(); break;
-        case 'subjects': dataRows = mockDb.getSubjects(); break;
-        case 'schedules': dataRows = mockDb.getSchedules(); break;
-        case 'attendance': dataRows = mockDb.getAttendances(); break;
-        case 'grades': dataRows = mockDb.getGrades(); break;
-        case 'fee_types': dataRows = mockDb.getFeeTypes(); break;
-        case 'fee_payments': dataRows = mockDb.getFeePayments(); break;
-        case 'audit_logs': dataRows = mockDb.getAuditLogs(); break;
-        default:
-          setConsoleError(`خطأ SQLite: جدول مجهول أو لا يوجد جدول باسم "${tableName}" في مخطط لقاعدة البيانات!`);
-          return;
-      }
-
-      // Simple where clause filter simulation (e.g. status = 'active' or gender = 'male')
-      let filteredRows = [...dataRows];
-      const whereIdx = cleanQuery.indexOf('where');
-      if (whereIdx !== -1) {
-        const clause = cleanQuery.substring(whereIdx + 5).trim();
-        if (clause.includes("gender = 'male'") || clause.includes("gender='male'") || clause.includes("gender = \"male\"")) {
-          filteredRows = filteredRows.filter(r => r.gender === 'male');
-          setConsoleMessage("تم تنفيذ تصفية الفلتر: gender = 'male'");
-        } else if (clause.includes("status = 'active'") || clause.includes("status='active'") || clause.includes("status = \"active\"")) {
-          filteredRows = filteredRows.filter(r => r.status === 'active');
-          setConsoleMessage("تم تنفيذ تصفية الفلتر: status = 'active'");
+      if (res.type === 'select') {
+        const rows = res.rows || [];
+        if (rows.length > 0) {
+          setConsoleColumns(Object.keys(rows[0]));
+          setConsoleResult(rows);
+          setConsoleMessage(`تم تنفيذ الاستعلام العلائقي بنجاح. تم العثور على ${rows.length} سجل.`);
         } else {
-          setConsoleMessage("تحذير: وحدة المفسر المبسطة لم تدرك شرط التصفية الدقيق WHERE هذا، تم تصدير كافة الجدول.");
+          setConsoleColumns([]);
+          setConsoleResult([]);
+          setConsoleMessage('الاستعلام نجح، ولكن لم ينتج عنه أي صفوف مطابقة (Empty Set).');
         }
-      }
-
-      if (filteredRows.length > 0) {
-        setConsoleColumns(Object.keys(filteredRows[0]));
-        setConsoleResult(filteredRows);
       } else {
-        setConsoleColumns([]);
-        setConsoleResult([]);
-        setConsoleMessage('الاستعلام نجح، ولكن لم ينتج عنه أي صفوف مطابقة (Empty Set).');
+        setConsoleMessage(res.message || 'نفذ الاستعلام بنجاح ودون أية أخطاء علائقية.');
+        // Refresh local cache values synchronously just in case they modified tables
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
-
     } catch (err: any) {
-      setConsoleError(`خطأ SQLite داخلي أثناء المعالجة: ${err.message}`);
+      setConsoleError(`فشل الاتصال بخادم قاعدة البيانات SQLite: ${err.message}`);
     }
   };
 
@@ -175,6 +262,13 @@ export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
           >
             <Terminal className="w-4 h-4 text-sky-500 shrink-0" />
             موجه ومفسر أوامر SQL
+          </button>
+          <button 
+            onClick={() => setActiveTab('admin')}
+            className={`px-4 py-2 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'admin' ? 'bg-white text-slate-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            <Settings className="w-4 h-4 text-rose-500 shrink-0" />
+            أدوات الصيانة والنسخ الاستراتيجي
           </button>
         </div>
       </div>
@@ -394,6 +488,144 @@ export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ADMIN SQLITE DATABASE MAINTENANCE SUITE */}
+      {activeTab === 'admin' && (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-6 text-rtl text-right">
+          <div>
+            <span className="text-xs bg-rose-50 border border-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded font-sans">SQLite System Ops</span>
+            <h2 className="text-lg font-bold text-slate-800 mt-2">مدير صيانة وإصلاح قاعدة البيانات الفيزيائية (school.db)</h2>
+            <p className="text-slate-500 text-xs mt-0.5 leading-relaxed font-sans">
+              تحكم كامل في فحص سلامة اتساق المفاتيح والملفات، النسخ الاحتياطي التلقائي على القرص الصلب، واستعادة البيانات والتهيئة لمرحلة الإنتاج الفوري.
+            </p>
+          </div>
+
+          {actionMessage && (
+            <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold rounded-xl leading-relaxed">
+              {actionMessage}
+            </div>
+          )}
+
+          {actionError && (
+            <div className="p-4 bg-red-50 border border-red-100 text-red-800 text-xs font-semibold rounded-xl leading-relaxed">
+              {actionError}
+            </div>
+          )}
+
+          {/* Database Diagnostics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+                <HardDrive className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-slate-400 text-[10px] block font-sans">مسار قاعدة البيانات الفعلي عل القرص</span>
+                <span className="text-slate-700 font-mono text-[11px] block truncate text-ltr text-left" title={dbInfo?.path || 'جارٍ القراءة...'}>
+                  {dbInfo?.path || 'data/school.db'}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg shrink-0">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] block font-sans">الحجم الحالي والمشغول على الهارد</span>
+                <span className="text-slate-700 font-bold text-xs block font-sans">
+                  {dbInfo?.size ? formatBytes(dbInfo.size) : '0 Bytes (in-memory mode for standalone test)'}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+              <div className="p-3 bg-sky-50 text-sky-600 rounded-lg shrink-0">
+                <Wrench className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] block font-sans">حالة المحرك الفيزيائي النشط</span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                  <span className="text-emerald-700 font-bold text-xs font-sans">
+                    {dbInfo?.status || 'نشط وملتزم (Active / Synced)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-150 pt-6">
+            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-slate-500" />
+              صيانة وضغط قاعدة البيانات وإدارة المزامنة الشاملة
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Option 1: Repair DB */}
+              <div className="p-5 border border-slate-100 rounded-2xl flex flex-col justify-between space-y-4 hover:border-indigo-105 hover:bg-slate-50/50 transition">
+                <div className="space-y-1">
+                  <span className="p-2 bg-indigo-50 text-indigo-650 rounded-lg inline-block">
+                    <Wrench className="w-4 h-4 text-indigo-600" />
+                  </span>
+                  <h4 className="text-xs font-bold text-slate-800 font-sans mt-2">محاذاة وضغط الجداول (VACUUM)</h4>
+                  <p className="text-[11px] text-slate-550 text-slate-400 leading-relaxed font-sans">
+                    تقوم هذه العملية بطلب تهجير المساحات الشاغرة وتنظيف السجلات الفارغة، مما يسرع تنفيذ الفهارس والاستعلامات.
+                  </p>
+                </div>
+                <button 
+                  onClick={handleRepairDb}
+                  disabled={loadingDbInfo}
+                  className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 py-2 rounded-xl text-xs font-bold transition font-sans"
+                >
+                  تشغيل أداة الصيانة الدورية
+                </button>
+              </div>
+
+              {/* Option 2: Dump SQL backups */}
+              <div className="p-5 border border-slate-100 rounded-2xl flex flex-col justify-between space-y-4 hover:border-emerald-105 hover:bg-slate-50/50 transition">
+                <div className="space-y-1">
+                  <span className="p-2 bg-emerald-50 text-emerald-650 rounded-lg inline-block">
+                    <Download className="w-4 h-4 text-emerald-600" />
+                  </span>
+                  <h4 className="text-xs font-bold text-slate-800 font-sans mt-2">عمل نسخة احتياطية محلية (school_backup.db)</h4>
+                  <p className="text-[11px] text-slate-550 text-slate-400 leading-relaxed font-sans">
+                    حفظ نسخة مكررة جديدة ممهورة بالوقت والتاريخ لسلامة السجلات والدرجات، حيث تحفظ آلياً في مجلد data/ الفرعي للتطبيق.
+                  </p>
+                </div>
+                <button 
+                  onClick={handleBackupDb}
+                  disabled={loadingDbInfo}
+                  className="w-full bg-emerald-600 text-white hover:bg-emerald-700 py-2 rounded-xl text-xs font-bold transition font-sans"
+                >
+                  نسخ احتياطي فوري للقرص
+                </button>
+              </div>
+
+              {/* Option 3: Restore Database JSON */}
+              <div className="p-5 border border-slate-100 rounded-2xl flex flex-col justify-between space-y-4 hover:border-rose-105 hover:bg-slate-50/50 transition">
+                <div className="space-y-1">
+                  <span className="p-2 bg-rose-50 text-rose-650 rounded-lg inline-block">
+                    <Upload className="w-4 h-4 text-rose-650 shrink-0 text-rose-500" />
+                  </span>
+                  <h4 className="text-xs font-bold text-slate-800 font-sans mt-2">استيراد واستعادة البيانات بالكامل</h4>
+                  <p className="text-[11px] text-slate-550 text-slate-400 leading-relaxed font-sans">
+                    تحميل ملفات النسخ الاحتياطي بصيغة JSON المصدّرة لاستعادة كافة السجلات وهيكلة الجداول والدرجات بسلامة كاملة.
+                  </p>
+                </div>
+                <label className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 py-2 rounded-xl text-xs font-bold transition font-sans text-center cursor-pointer block">
+                  تحميل ملف الاستيراد (.json)
+                  <input 
+                    type="file" 
+                    accept=".json" 
+                    onChange={handleRestoreDb}
+                    className="hidden" 
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
