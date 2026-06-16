@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { mockDb } from '../db/mockDb';
 import { Student, FeeType, FeePayment } from '../types';
 import { 
@@ -29,6 +30,11 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
   const [payments, setPayments] = useState<FeePayment[]>(mockDb.getFeePayments());
   const [students] = useState<Student[]>(mockDb.getStudents());
   const [searchQuery, setSearchQuery] = useState('');
+
+  const receiptPrintRef = useRef<HTMLDivElement>(null);
+  const handlePrintReceipt = useReactToPrint({
+    contentRef: receiptPrintRef,
+  });
 
   // Modals status
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
@@ -411,7 +417,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
               <button onClick={() => setPrintedPayment(null)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <div className="p-6 bg-white space-y-4 text-slate-800 border-b border-slate-100" id="official-money-receipt">
+            <div ref={receiptPrintRef} className="p-6 bg-white space-y-4 text-slate-800 border-b border-slate-100" id="official-money-receipt">
               {/* Header branding */}
               <div className="text-center pb-3 border-b-2 border-slate-200">
                 <h3 className="text-xs font-bold font-sans">مدارس منارة التميز الأهلية</h3>
@@ -421,36 +427,36 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
 
               {/* Data body list */}
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between border-b border-slate-50 pb-1">
+                <div className="flex justify-between border-b border-slate-50 pb-1 font-sans">
                   <span className="text-slate-400">تاريخ الاستلام:</span>
                   <span className="font-mono text-slate-700 font-bold">{printedPayment.paymentDate}</span>
                 </div>
-                <div className="flex justify-between border-b border-slate-50 pb-1">
+                <div className="flex justify-between border-b border-slate-50 pb-1 font-sans font-sans">
                   <span className="text-slate-400">اسم الطالب:</span>
                   <span className="text-slate-800 font-bold">{students.find(s => s.id === printedPayment.studentId)?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-slate-50 pb-1">
+                <div className="flex justify-between border-b border-slate-50 pb-1 font-sans">
                   <span className="text-slate-400">الوصف المستحق:</span>
                   <span className="text-slate-700">{feeTypes.find(f => f.id === printedPayment.feeTypeId)?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-slate-50 pb-1">
+                <div className="flex justify-between border-b border-slate-50 pb-1 font-sans">
                   <span className="text-slate-400">طريقة الدفع في الماكينة:</span>
                   <span className="text-slate-800 font-bold">
                     {printedPayment.paymentMethod === 'bank_transfer' ? 'تحويل بنكي' :
                      printedPayment.paymentMethod === 'card' ? 'شبكة صرافة' : 'نقداً عيناً بالصندوق'}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2 pt-2 text-sm">
+                <div className="flex justify-between border-b border-slate-100 pb-2 pt-2 text-sm font-sans">
                   <span className="text-slate-800 font-bold">المبلغ المقبوض:</span>
                   <span className="font-mono font-black text-emerald-600">{printedPayment.amountPaid.toLocaleString()} ريال سعودي</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 bg-slate-50 rounded p-2 text-xs italic">
+                <p className="text-[10px] text-slate-400 mt-2 bg-slate-50 rounded p-2 text-xs italic font-sans">
                   * ملاحظات الدفتر المالي: {printedPayment.notes || 'سدد على مسمى الطالب لقيد الاستقرار.'}
                 </p>
               </div>
 
               {/* Signature stamp mock */}
-              <div className="flex justify-between pt-6 text-[10px] text-slate-400">
+              <div className="flex justify-between pt-6 text-[10px] text-slate-400 font-sans">
                 <div className="text-center">
                   <span>أمين الخزينة</span>
                   <p className="font-serif text-slate-300">موقع إلكترونياً</p>
@@ -467,7 +473,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
               <button onClick={() => setPrintedPayment(null)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300">إلغاء</button>
               <button 
                 onClick={() => {
-                  window.print();
+                  handlePrintReceipt();
                   mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة سند قبض مالي', `طباعة وإشهار السند رقم ${printedPayment.referenceNumber}`);
                 }}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm transition"

@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { mockDb } from '../db/mockDb';
 import { Classroom, Student, Attendance } from '../types';
 import { 
@@ -17,7 +18,8 @@ import {
   Users,
   CheckCircle,
   Clock,
-  Heart
+  Heart,
+  Printer
 } from 'lucide-react';
 
 interface AttendanceViewProps {
@@ -28,6 +30,11 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
   const [classrooms] = useState<Classroom[]>(mockDb.getClassrooms());
   const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
   const [attendance, setAttendance] = useState<Attendance[]>(mockDb.getAttendances());
+
+  const attendancePrintRef = useRef<HTMLDivElement>(null);
+  const handlePrintAttendance = useReactToPrint({
+    contentRef: attendancePrintRef,
+  });
 
   // Filters
   const [selectedClassId, setSelectedClassId] = useState<string>(classrooms[0]?.id || '');
@@ -119,11 +126,25 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
             </h2>
             <p className="text-slate-500 text-xs mt-0.5">تسجيل الدفاتر اليومية للصفوف مع توليد ذكي لإنذارات الغياب المتكرر بنموذج SQLite المعياري</p>
           </div>
-          {notification && (
-            <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1.5 rounded-xl font-bold">
-              {notification}
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {notification && (
+              <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1.5 rounded-xl font-bold">
+                {notification}
+              </div>
+            )}
+            <button 
+              type="button"
+              onClick={() => {
+                handlePrintAttendance();
+                const viewName = classrooms.find(c => c.id === selectedClassId)?.name || '';
+                mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة كشف الحضور والغياب', `أمر طباعة لدفتر الحضور للصف ${viewName} بتاريخ ${selectedDate}`);
+              }}
+              className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition hover:cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              طباعة كشف الغياب اليومي
+            </button>
+          </div>
         </div>
 
         {/* Date and Classroom Selector Panel */}
@@ -154,10 +175,29 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
       </div>
 
       {/* Main Attendance List Sheet */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+      <div ref={attendancePrintRef} className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm print:p-8">
+        {/* Printable official header */}
+        <div className="hidden print:block mb-6 border-b-2 border-slate-300 pb-4 text-right">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h1 className="text-xs font-bold text-slate-500 font-sans">وزارة التعليم بالمملكة العربية السعودية</h1>
+              <h2 className="text-base font-bold text-slate-800 mt-1">{mockDb.getSettings().schoolName}</h2>
+            </div>
+            <div className="text-left font-sans text-[10px] text-slate-400">
+              <p>نوع المسند: كشف الرصد اليومي للحضور والغياب</p>
+              <p className="font-mono">تاريخ الرصد: {selectedDate}</p>
+              <p className="font-mono">تاريخ الطباعة: {new Date().toLocaleDateString('ar-SA')}</p>
+            </div>
+          </div>
+          <div className="text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg flex justify-between items-center font-semibold text-slate-700">
+            <span>العام الدراسي الحاصل: {mockDb.getSettings().currentAcademicYear || '1447هـ'}</span>
+            <span>الفصل المدرسي المستهدف: {classrooms.find(c => c.id === selectedClassId)?.name || ''}</span>
+          </div>
+        </div>
+
         <form onSubmit={handleSaveBatch} className="space-y-6">
           <div className="overflow-x-auto text-right">
-            <table className="w-full text-sm text-slate-600">
+            <table className="w-full text-sm text-slate-600 print:text-xs">
               <thead className="bg-slate-50 border-b border-slate-100 font-bold text-slate-700">
                 <tr>
                   <th className="py-3 px-4 text-xs font-sans">اسم الطالب</th>
