@@ -22,6 +22,7 @@ import ParentsView from './components/ParentsView';
 import SQLiteExplorer from './components/SQLiteExplorer';
 import SettingsView from './components/SettingsView';
 import AIAssistantView from './components/AIAssistantView';
+import DesktopHubView from './components/DesktopHubView';
 
 import { 
   School, 
@@ -48,7 +49,10 @@ import {
   Cpu,
   Laptop,
   Activity,
-  ShieldCheck
+  ShieldCheck,
+  WifiOff,
+  AlertTriangle,
+  Download
 } from 'lucide-react';
 
 export default function App() {
@@ -69,6 +73,55 @@ export default function App() {
   
   // Mobile responsive sidebar toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Connection and Storage health states
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isStorageAvailable, setIsStorageAvailable] = useState(true);
+  const [showEmergencyBackupModal, setShowEmergencyBackupModal] = useState(false);
+  
+  // Simulation flag to test warning badge and storage offline state
+  const [simulateFailure, setSimulateFailure] = useState(false);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    // Dynamic storage health detector
+    const checkStorageHealth = () => {
+      if (simulateFailure) {
+        setIsStorageAvailable(false);
+        return;
+      }
+
+      try {
+        const testKey = '__manara_storage_check__';
+        localStorage.setItem(testKey, 'ok');
+        const value = localStorage.getItem(testKey);
+        localStorage.removeItem(testKey);
+        setIsStorageAvailable(value === 'ok');
+      } catch (e) {
+        setIsStorageAvailable(false);
+      }
+    };
+
+    checkStorageHealth();
+    
+    // Check every 4 seconds to catch quota exceeded or storage lock immediately
+    const interval = setInterval(checkStorageHealth, 4000);
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
+      clearInterval(interval);
+    };
+  }, [simulateFailure]);
 
   // Trigger app-wide stats/header refreshes when settings update
   const [refreshSeed, setRefreshSeed] = useState(0);
@@ -326,6 +379,7 @@ export default function App() {
       roles: ['admin', 'supervisor', 'director', 'vice_director', 'student_affairs', 'teacher', 'accountant', 'parent'],
       items: [
         { id: 'dashboard', label: 'لوحة قياس الأداء والقيادة', roles: ['admin', 'supervisor', 'director', 'vice_director', 'student_affairs', 'teacher', 'accountant', 'parent'] },
+        { id: 'desktop-hub', label: 'مركز التحكم وهندسة سطح المكتب Windows', roles: ['admin', 'director', 'vice_director', 'student_affairs'] },
         { id: 'settings', label: 'إدارة حسابات المستخدمين', subTab: 'users', roles: ['admin', 'director'] },
         { id: 'settings', label: 'الصلاحيات والضبط العام', subTab: 'general', roles: ['admin'] }
       ]
@@ -489,6 +543,12 @@ export default function App() {
         return (
           <div key={`${refreshSeed}-ai-${aiAssistantTab}`} className="contents">
             <AIAssistantView currentUser={currentUser} initialTab={aiAssistantTab} />
+          </div>
+        );
+      case 'desktop-hub':
+        return (
+          <div key={`${refreshSeed}-desktop`} className="contents">
+            <DesktopHubView currentUser={currentUser} onRefreshAll={handleRefreshAll} />
           </div>
         );
       case 'settings': 
@@ -683,6 +743,37 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3 text-slate-400">
+              {/* Connection & Storage Health Badge */}
+              {(!isOnline || !isStorageAvailable) ? (
+                <button
+                  type="button"
+                  onClick={() => setShowEmergencyBackupModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-300 text-rose-700 hover:bg-rose-100 hover:border-rose-400 rounded-full animate-pulse transition duration-300 font-extrabold text-[10.5px] cursor-pointer"
+                  title="تحذير: الذاكرة المحلية غير متاحة أو أنت منقطع عن الإنترنت! اضغط للنسخ الاحتياطي الفوري"
+                  id="emergency-status-badge"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span className="hidden sm:inline">⚠️ خطأ بالأمان: اضغط للنسخ الاحتياطي الآن!</span>
+                  <span className="inline sm:hidden">⚠️ حفظ طوارئ!</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Instantly trigger simulated storage limit / failure state so the user can test the warning badge
+                    setSimulateFailure(true);
+                    setIsStorageAvailable(false);
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-rose-55 hover:bg-rose-50 border border-emerald-100 hover:border-rose-200 text-emerald-700 hover:text-rose-700 rounded-full transition duration-300 font-bold text-[10px] cursor-pointer group shrink-0"
+                  title="الاتصال وقاعدة البيانات مؤمنة بشكل سليم. اضغط لمحاكاة تعطل الذاكرة أو انقطاع النت!"
+                  id="standard-health-badge"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 group-hover:bg-rose-500 animate-pulse"></span>
+                  <span>حفظ SQLite مؤمن</span>
+                  <span className="hidden md:inline text-[8px] bg-emerald-150 bg-emerald-100 px-1.5 py-0.5 rounded-full text-emerald-800 group-hover:bg-rose-150 group-hover:bg-rose-100 group-hover:text-rose-800 transition text-[9px]">اختبار الطوارئ</span>
+                </button>
+              )}
+
               {/* Yemeni National Flag and golden Eagle Emblem */}
               <div className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl select-none" id="yemen-national-badges">
                 {/* Horizontal flag strip */}
@@ -747,6 +838,137 @@ export default function App() {
         </footer>
 
       </div>
+
+      {/* Emergency Backup Modal Dialog */}
+      {showEmergencyBackupModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4" id="emergency-backup-modal">
+          <div className="bg-slate-900 border border-rose-500/20 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative text-right animate-scale-in" dir="rtl">
+            
+            {/* Red Alarm ring decoration */}
+            <div className="w-16 h-16 rounded-full bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center text-rose-500 mx-auto mb-4 animate-bounce">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+
+            <h3 className="text-base font-black text-white text-center">تنبيه طوارئ أمن البيانات والاتصال بالكشوفات المدرسية</h3>
+            <p className="text-slate-400 text-xs text-center mt-2 leading-relaxed">
+              لقد رصد كاشف الموثوقية التلقائي تعطلاً في اتصال الإنترنت الداخلي أو عدم استجابة الذاكرة المحلية المؤقتة للمتصفح (<span className="text-rose-400 font-mono text-xs">browser storage quota block</span>). يرجى المبادرة بحفظ كشوفاتك الآن فوراً لتجنب فقدانها.
+            </p>
+
+            {/* Connection States breakdown */}
+            <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 my-5 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center text-slate-300">
+                <span className="font-bold">حالة اتصال الشبكة:</span>
+                {isOnline ? (
+                  <span className="text-emerald-400 font-bold">● متصل بالإنترنت</span>
+                ) : (
+                  <span className="text-rose-400 font-bold flex items-center gap-1">
+                    <WifiOff className="w-3.5 h-3.5" />
+                    منقطع (أوفلاين)
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between items-center text-slate-300">
+                <span className="font-bold">حالة الذاكرة المحلية للكشوفات:</span>
+                {isStorageAvailable ? (
+                  <span className="text-emerald-400 font-bold">● طبيعي ومتاح</span>
+                ) : (
+                  <span className="text-rose-450 text-red-400 font-bold">
+                    ⚠️ غير متوفرة / تالفة أو ممتلئة
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Immediate backup buttons */}
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const jsonStr = mockDb.exportBackupJSON();
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.setAttribute("download", `manara_emergency_backup_${new Date().toISOString().split('T')[0]}.json`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-black rounded-xl text-xs transition duration-300 shadow-md cursor-pointer text-right"
+              >
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-white shrink-0 animate-pulse" />
+                  <div className="text-right">
+                    <span className="font-bold block">تحميل فوري لملف الحفظ الشامل (JSON)</span>
+                    <span className="text-[10px] text-white/70 block mt-0.5">كشوفات الطلاب والدرجات والمالية في ملف واحد</span>
+                  </div>
+                </div>
+                <span className="bg-white/20 px-2 py-1 rounded text-[10px]">استخلاص فوري</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const sql = mockDb.exportSQLBackup();
+                    const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.setAttribute("download", `manara_emergency_backup_sqlite.sql`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                className="w-full flex items-center justify-between p-3.5 bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold rounded-xl text-xs transition border border-slate-700 cursor-pointer text-right"
+              >
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4 text-amber-500 shrink-0" />
+                  <div className="text-right">
+                    <span className="font-bold block">تصدير قاعدة البيانات كسكربت متكامل (SQL script)</span>
+                    <span className="text-[10px] text-slate-450 text-slate-400 block mt-0.5">جاهز للاستيراد في SQLite محلياً لسطح المكتب</span>
+                  </div>
+                </div>
+                <span className="bg-slate-900 px-2 py-0.5 rounded text-[10px] font-mono text-emerald-400">SQL Code</span>
+              </button>
+            </div>
+
+            {/* Footer operations */}
+            <div className="mt-6 pt-5 border-t border-slate-850 flex justify-between items-center gap-4">
+              {simulateFailure ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimulateFailure(false);
+                    setIsStorageAvailable(true);
+                    setShowEmergencyBackupModal(false);
+                  }}
+                  className="text-xs text-sky-400 hover:text-sky-300 font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  🔄 إلغاء محاكاة التعطل والعودة للطبيعي
+                </button>
+              ) : (
+                <span className="text-[10px] text-slate-500 font-mono">طوارئ مجمع المنارة اليمن</span>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowEmergencyBackupModal(false)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer"
+              >
+                إغلاق النافذة
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
