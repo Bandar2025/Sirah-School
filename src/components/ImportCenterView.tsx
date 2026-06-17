@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Student, Teacher, Grade, Attendance, FeePayment } from '../types';
 import { 
   Upload, 
@@ -114,7 +114,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
 
       // Now, let's auto-detect columns for school subjects!
       const initialMappings: Record<string, { courseworkCol: number; finalCol: number }> = {};
-      const schoolSubjects = mockDb.getSubjects();
+      const schoolSubjects = schoolDatabase.getSubjects();
 
       schoolSubjects.forEach(subject => {
         let foundSubjectCol = -1;
@@ -193,7 +193,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
   };
 
   React.useEffect(() => {
-    const list = mockDb.getClassrooms();
+    const list = schoolDatabase.getClassrooms();
     if (list.length > 0) {
       setWideClassroomId(list[0].id);
     }
@@ -391,8 +391,8 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
     });
 
     // Check duplicates and values row by row
-    const existingStudents = mockDb.getStudents();
-    const existingTeachers = mockDb.getTeachers();
+    const existingStudents = schoolDatabase.getStudents();
+    const existingTeachers = schoolDatabase.getTeachers();
 
     data.forEach((rowObj, index) => {
       const rowNum = index + 2; // offset for 1-based indexing of data rows in Excel (header of 1 + row 0-indexed)
@@ -462,7 +462,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
         if (!subjectName) {
           errors.push({ row: rowNum, details: "حقل اسم المادة الدراسية فارغ!", type: 'error' });
         } else {
-          const matchedSub = mockDb.getSubjects().find(s => s.name.includes(subjectName) || subjectName.includes(s.name));
+          const matchedSub = schoolDatabase.getSubjects().find(s => s.name.includes(subjectName) || subjectName.includes(s.name));
           if (!matchedSub) {
             errors.push({ row: rowNum, details: `المادة الدراسية [${subjectName}] غير مقيدة ببرنامج الحصص المدرسي بالمدرسة مسبقاً!`, type: 'error' });
           }
@@ -511,8 +511,8 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
       let skipped = 0;
       let updated = 0;
 
-      const existingStudents = mockDb.getStudents();
-      const schoolSubjects = mockDb.getSubjects();
+      const existingStudents = schoolDatabase.getStudents();
+      const schoolSubjects = schoolDatabase.getSubjects();
 
       const startIdx = wideHeaderRowIndex;
       
@@ -549,7 +549,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
         if (!student) {
           const parentName = `والد الطالب ${studentName}`;
           const parentNationalId = `11${Math.floor(100000000 + Math.random() * 900000000)}`;
-          const parent = mockDb.addParent({
+          const parent = schoolDatabase.addParent({
             name: parentName,
             nationalId: parentNationalId,
             phone: '770000000',
@@ -561,7 +561,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           const studentNationalId = `21${Math.floor(100000000 + Math.random() * 900000000)}`;
           const studentNumber = `REG-YEM-${Math.floor(10000 + Math.random() * 90000)}`;
           
-          student = mockDb.addStudent({
+          student = schoolDatabase.addStudent({
             name: studentName,
             gender: 'male',
             birthDate: '2015-01-01',
@@ -594,7 +594,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           const fn = finalExamVal !== undefined && finalExamVal !== '' ? parseFloat(String(finalExamVal)) : NaN;
 
           if (!isNaN(cw) || !isNaN(fn)) {
-            mockDb.addOrUpdateGrade({
+            schoolDatabase.addOrUpdateGrade({
               studentId: student!.id,
               subjectId: subject.id,
               examName: wideExamName,
@@ -618,11 +618,11 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
         updated
       });
 
-      mockDb.addAuditLog(
+      schoolDatabase.addAuditLog(
         currentUser.id, 
         currentUser.username, 
         'استيراد كشف درجات الوزارة', 
-        `تم استيراد كشف درجات الوزارة لصف (${mockDb.getClassrooms().find(c => c.id === wideClassroomId)?.name || wideClassroomId}) بنجاح`
+        `تم استيراد كشف درجات الوزارة لصف (${schoolDatabase.getClassrooms().find(c => c.id === wideClassroomId)?.name || wideClassroomId}) بنجاح`
       );
 
       setStep(3);
@@ -642,10 +642,10 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
     let skipped = 0;
     let updated = 0;
 
-    const existingStudents = mockDb.getStudents();
-    const existingParents = mockDb.getParents();
-    const existingClassrooms = mockDb.getClassrooms();
-    const existingSubjects = mockDb.getSubjects();
+    const existingStudents = schoolDatabase.getStudents();
+    const existingParents = schoolDatabase.getParents();
+    const existingClassrooms = schoolDatabase.getClassrooms();
+    const existingSubjects = schoolDatabase.getSubjects();
 
     parsedData.forEach(rowObj => {
       try {
@@ -671,7 +671,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           
           // Auto-create a parent record for bulk imports
           const parentName = `والد الطالب ${nameVal}`;
-          const newParent = mockDb.addParent({
+          const newParent = schoolDatabase.addParent({
             name: parentName,
             nationalId: `11${idVal.substring(2, 10) || '0000000'}`,
             phone: '777000000',
@@ -681,7 +681,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           }, currentUser.id, currentUser.username);
           parentToUse = newParent.id;
 
-          mockDb.addStudent({
+          schoolDatabase.addStudent({
             name: nameVal,
             gender: genderVal,
             birthDate: dob,
@@ -712,12 +712,12 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           const email = rowObj[columnMapping['email']] || 'teacher@school.ye';
           const salary = parseFloat(rowObj[columnMapping['salary']]) || 100000;
 
-          if (mockDb.getTeachers().some(t => t.nationalId === idVal)) {
+          if (schoolDatabase.getTeachers().some(t => t.nationalId === idVal)) {
             skipped++;
             return;
           }
 
-          mockDb.addTeacher({
+          schoolDatabase.addTeacher({
             name: nameVal,
             nationalId: idVal,
             qualification: qual,
@@ -749,10 +749,10 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           }
 
           // Check if already present, updates existing or inserts if missing
-          const existingGrades = mockDb.getGrades();
+          const existingGrades = schoolDatabase.getGrades();
           const alreadyHas = existingGrades.some(g => g.studentId === matchedStud.id && g.subjectId === matchedSub.id && g.examName === exName);
 
-          mockDb.addOrUpdateGrade({
+          schoolDatabase.addOrUpdateGrade({
             studentId: matchedStud.id,
             subjectId: matchedSub.id,
             examName: exName,
@@ -788,7 +788,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           else if (rawStatus.includes('متأخر') || rawStatus.includes('late')) formattedStatus = 'late';
           else if (rawStatus.includes('مستأذن') || rawStatus.includes('excused')) formattedStatus = 'excused';
 
-          mockDb.saveAttendanceBatch([{
+          schoolDatabase.saveAttendanceBatch([{
             studentId: matchedStud.id,
             date: attDate,
             status: formattedStatus,
@@ -809,21 +809,21 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
           const matchedStud = existingStudents.find(s => 
             s.name === stKey || s.seatNumber === stKey || s.studentNumber === stKey
           );
-          const matchedFee = mockDb.getFeeTypes().find(f => f.name.includes(feeName) || feeName.includes(f.name)) || mockDb.getFeeTypes()[0];
+          const matchedFee = schoolDatabase.getFeeTypes().find(f => f.name.includes(feeName) || feeName.includes(f.name)) || schoolDatabase.getFeeTypes()[0];
 
           if (!matchedStud) {
             skipped++;
             return;
           }
 
-          mockDb.addFeePayment({
+          schoolDatabase.addFeePayment({
             studentId: matchedStud.id,
             feeTypeId: matchedFee.id,
             amountPaid: rawAmount,
             paymentDate: new Date().toISOString().split('T')[0],
             paymentMethod: method === 'كاش' || method === 'نقدي' ? 'cash' : 'bank_transfer',
             referenceNumber: refNo,
-            academicYear: mockDb.getSettings().currentAcademicYear,
+            academicYear: schoolDatabase.getSettings().currentAcademicYear,
             notes: notes
           }, currentUser.id, currentUser.username);
 
@@ -842,7 +842,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
       updated
     });
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id, 
       currentUser.username, 
       'معالجة استيراد دفعات', 
@@ -1024,7 +1024,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
                       onChange={(e) => setWideClassroomId(e.target.value)}
                       className="bg-slate-50 border border-slate-200 rounded-lg text-xs p-1.5 md:p-2 outline-none font-bold text-primary cursor-pointer"
                     >
-                      {mockDb.getClassrooms().map(c => (
+                      {schoolDatabase.getClassrooms().map(c => (
                         <option key={c.id} value={c.id}>{c.name} ({c.stage === 'primary' ? 'أساسي' : 'ثانوي'})</option>
                       ))}
                     </select>
@@ -1087,7 +1087,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {mockDb.getSubjects().map(subject => {
+                  {schoolDatabase.getSubjects().map(subject => {
                     const mapping = wideSubjectMappings[subject.id] || { courseworkCol: -1, finalCol: -1 };
                     return (
                       <div key={subject.id} className="border border-slate-150 rounded-xl p-3 bg-slate-50/50 space-y-2">
@@ -1154,7 +1154,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
                       <tr className="border-b border-amber-200/50 pb-1 text-slate-700 uppercase">
                         <th className="p-1 font-black">رقم جلوس الطالب</th>
                         <th className="p-1 font-black">اسم الطالب المكتشف</th>
-                        {mockDb.getSubjects().map(sub => (
+                        {schoolDatabase.getSubjects().map(sub => (
                           <th key={sub.id} className="p-1 font-black">{sub.name}</th>
                         ))}
                       </tr>
@@ -1167,7 +1167,7 @@ export default function ImportCenterView({ currentUser, onImportComplete }: Impo
                           <tr key={rIdx} className="border-b border-slate-100 last:border-0 hover:bg-slate-100/40">
                             <td className="p-1.5 font-mono text-slate-500 font-bold">{String(row[wideSeatColIndex] || '')}</td>
                             <td className="p-1.5 font-bold text-indigo-950">{String(row[wideNameColIndex] || '')}</td>
-                            {mockDb.getSubjects().map(sub => {
+                            {schoolDatabase.getSubjects().map(sub => {
                               const cb = wideSubjectMappings[sub.id];
                               const courseworkVal = cb ? row[cb.courseworkCol] : '';
                               const finalExamVal = cb ? row[cb.finalCol] : '';

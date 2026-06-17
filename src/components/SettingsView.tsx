@@ -4,8 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { SchoolSettings } from '../types';
+import AboutDialog from './AboutDialog';
 import { 
   Settings, 
   Upload, 
@@ -22,7 +23,11 @@ import {
   Terminal,
   Cpu,
   Laptop,
-  Lock
+  Lock,
+  Info,
+  ShieldCheck,
+  Calendar,
+  Key
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -31,7 +36,7 @@ interface SettingsViewProps {
 }
 
 export default function SettingsView({ currentUser, onRefreshAll }: SettingsViewProps) {
-  const [settings, setSettings] = useState<SchoolSettings>(mockDb.getSettings());
+  const [settings, setSettings] = useState<SchoolSettings>(schoolDatabase.getSettings());
   
   // Custom states
   const [schoolName, setSchoolName] = useState(settings.schoolName);
@@ -45,17 +50,22 @@ export default function SettingsView({ currentUser, onRefreshAll }: SettingsView
   const [statusMessage, setStatusMessage] = useState('');
   const [backupFileContent, setBackupFileContent] = useState('');
   const [showCopiedText, setShowCopiedText] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+
+  // License management states
+  const [licenseKey, setLicenseKey] = useState(settings.licenseKey || '');
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    mockDb.updateSettings({
+    schoolDatabase.updateSettings({
       schoolName,
       logoUrl,
       contactPhone: phone,
       contactEmail: email,
       currentAcademicYear: year,
       address,
-      bankAccount: bank
+      bankAccount: bank,
+      licenseKey
     }, currentUser.id, currentUser.username);
 
     setStatusMessage('✓ تم إجراء الحفظ والتعديل على هوية التقارير بنجاح.');
@@ -65,14 +75,14 @@ export default function SettingsView({ currentUser, onRefreshAll }: SettingsView
 
   const handleFactoryReset = () => {
     if (window.confirm('🚨 هدم وإعادة بناء: هل أنت متأكد من تفريغ كافة الجداول المحلية وعمل إعادة ضبط المصنع؟ سيتم محو الطلاب والدفعات التي أدخلتها وتعبئة قاعدة البيانات بالمدخلات العشوائية الافتراضية للتقييم.')) {
-      mockDb.resetToDefaults();
+      schoolDatabase.resetToDefaults();
       location.reload(); // reboot app context safely
     }
   };
 
   // Export database as SQLite-compatible .SQL file
   const handleExportSQL = () => {
-    const sql = mockDb.exportSQLBackup();
+    const sql = schoolDatabase.exportSQLBackup();
     const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -87,7 +97,7 @@ export default function SettingsView({ currentUser, onRefreshAll }: SettingsView
 
   // Export database as JSON file backup
   const handleExportJSON = () => {
-    const jsonStr = mockDb.exportBackupJSON();
+    const jsonStr = schoolDatabase.exportBackupJSON();
     const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -108,7 +118,7 @@ export default function SettingsView({ currentUser, onRefreshAll }: SettingsView
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      const success = mockDb.importBackupJSON(text, currentUser.id, currentUser.username);
+      const success = schoolDatabase.importBackupJSON(text, currentUser.id, currentUser.username);
       if (success) {
         alert('نجاح: تم استرداد وتركيب كافة الجداول والمحددات القديمة في SQLite الداخلي للمتصفح!');
         location.reload();
@@ -201,7 +211,7 @@ npm run dev`;
   return (
     <div className="space-y-6 animate-fade-in" id="settings-tab-view-container">
       
-      {/* 🏅 HONORARY CREATORS BADGE CARD (HIGH-FIDELITY DESIGN) */}
+      {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
       <div className="bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#111827] rounded-3xl p-6 border-2 border-amber-500/40 shadow-xl relative overflow-hidden" id="system-creators-honor-card">
         {/* Background decorative glowing patterns */}
         <div className="absolute right-0 top-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -263,11 +273,20 @@ npm run dev`;
             </div>
 
             <div className="flex justify-between items-center text-[10px] text-slate-500 pt-2 font-mono">
-              <span>الإصدار التمكيني الذهبي: v1.7.0 (Manara Golden-ED)</span>
-              <span className="text-emerald-400 font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                كافة الأنظمة والارتباطات تعمل بكفاءة مطلقة
-              </span>
+              <span>الإصدار الذهبي: {settings.version || '2.5.0-YEM'}</span>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowAbout(true)}
+                  className="flex items-center gap-1 text-indigo-400 font-bold hover:text-indigo-300 transition-colors"
+                >
+                  <Info className="w-3 h-3" />
+                  حول النظام والمطور
+                </button>
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  كافة الأنظمة والارتباطات تعمل بكفاءة مطلقة
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -382,6 +401,68 @@ npm run dev`;
               </button>
             </div>
           </form>
+
+          {/* 🔑 LICENSE MANAGEMENT SECTION */}
+          <div className="mt-8 pt-8 border-t border-slate-100">
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              إدارة التراخيص وتفعيل النظام
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-bold text-slate-500">حالة التفعيل الحالية</span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${settings.activationStatus === 'activated' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {settings.activationStatus === 'activated' ? 'مفعل بالكامل' : 'فترة تجريبية'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center border border-slate-200 shadow-sm">
+                    <Calendar className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">تاريخ انتهاء الصلاحية</p>
+                    <p className="text-sm font-mono text-slate-600">{settings.expiryDate || '2027-06-15'}</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                  ملاحظة: تنتهي صلاحية النسخة التجريبية تلقائياً بعد مرور المدة المحددة. يرجى التواصل مع الدعم الفني للحصول على مفتاح التفعيل الدائم.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-600 block flex items-center gap-1">
+                    <Key className="w-3 h-3" />
+                    مفتاح الترخيص (License Key)
+                  </label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-mono font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all tracking-widest text-center"
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
+                      value={licenseKey}
+                      onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
+                    />
+                    <button 
+                      onClick={() => {
+                        handleSaveSettings({ preventDefault: () => {} } as any);
+                        setStatusMessage('✓ جاري التحقق من مفتاح الترخيص وتحديث سجلات الأمان...');
+                      }}
+                      className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all font-sans"
+                    >
+                      تفعيل
+                    </button>
+                  </div>
+                </div>
+                <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                  <p className="text-[10px] text-indigo-700 leading-tight">
+                    * تأكد من إدخال المفتاح بشكل صحيح. يتكون المفتاح من 16 حرفاً ورقماً مقسمة بأربع مجموعات.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Left side database backup tools panel */}

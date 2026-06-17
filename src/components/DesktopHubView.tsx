@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 
 declare global {
   interface Window {
@@ -171,7 +171,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
             `أ. طارق بندر محمد اسماعيل,1088210332,الحاسوب والفيزياء,بكالوريوس هندسة برمجيات,773344551,190000\n` +
             `أ. مروان رشيد شكري سلطان,1099120443,اللغة الإنجليزية,ماجستير آداب إنجليزي,772233884,175000`;
     } else if (importEntity === 'grades') {
-      const allStds = mockDb.getStudents();
+      const allStds = schoolDatabase.getStudents();
       const std1 = allStds[0]?.id || 'std-1-1';
       const std2 = allStds[1]?.id || 'std-1-2';
       csv = `معرف الطالب,معرف المادة,اسم الاختبار,أعمال السنة,الورقة النهائية\n` +
@@ -179,14 +179,14 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
             `${std2},sub-1,اختبار الفصل الأول,28,70\n` +
             `${std1},sub-3,اختبار الفصل الأول,30,60`;
     } else if (importEntity === 'attendance') {
-      const stds = mockDb.getStudents();
+      const stds = schoolDatabase.getStudents();
       const std1 = stds[0]?.id || 'std-1-1';
       const std2 = stds[1]?.id || 'std-1-2';
       csv = `معرف الطالب,تاريخ اليوم,الحالة,مذكرة\n` +
             `${std1},2026-06-16,present,حاضر بموعده\n` +
             `${std2},2026-06-16,absent,غياب بدون عذر مسبق`;
     } else {
-      const stds = mockDb.getStudents();
+      const stds = schoolDatabase.getStudents();
       const std1 = stds[0]?.id || 'std-1-1';
       csv = `معرف الطالب,بند الرسم,المصروف المقبوض,التأريخ,رقم السند المالي\n` +
             `${std1},fee-1,35000,2026-06-16,TXN-OFF-1090`;
@@ -328,7 +328,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
         };
 
         if (importEntity === 'students') {
-          mockDb.addStudent({
+          schoolDatabase.addStudent({
             name: getVal('name'),
             gender: getVal('gender') as 'male' | 'female',
             birthDate: getVal('birthDate') || '2020-01-01',
@@ -345,7 +345,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
           }, activeUser, activeUsername);
           successCount++;
         } else if (importEntity === 'teachers') {
-          mockDb.addTeacher({
+          schoolDatabase.addTeacher({
             name: getVal('name'),
             nationalId: getVal('nationalId'),
             qualification: getVal('qualification') || 'بكالوريوس تربية',
@@ -357,7 +357,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
           }, activeUser, activeUsername);
           successCount++;
         } else if (importEntity === 'grades') {
-          mockDb.addOrUpdateGrade({
+          schoolDatabase.addOrUpdateGrade({
             studentId: getVal('studentId'),
             subjectId: getVal('subjectId'),
             examName: getVal('examName'),
@@ -367,7 +367,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
           }, activeUser, activeUsername);
           successCount++;
         } else if (importEntity === 'attendance') {
-          mockDb.saveAttendanceBatch([{
+          schoolDatabase.saveAttendanceBatch([{
             studentId: getVal('studentId'),
             date: getVal('date') || new Date().toISOString().split('T')[0],
             status: (getVal('status') || 'present') as any,
@@ -375,7 +375,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
           }], activeUser, activeUsername);
           successCount++;
         } else if (importEntity === 'fees') {
-          mockDb.addFeePayment({
+          schoolDatabase.addFeePayment({
             studentId: getVal('studentId'),
             feeTypeId: getVal('feeTypeId') || 'fee-1',
             amountPaid: Number(getVal('amountPaid')) || 15000,
@@ -410,8 +410,8 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
   const [printModelOpen, setPrintModelOpen] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
-  const classes = mockDb.getClassrooms();
-  const students = mockDb.getStudents().filter(s => s.classId === printSelectedClass);
+  const classes = schoolDatabase.getClassrooms();
+  const students = schoolDatabase.getStudents().filter(s => s.classId === printSelectedClass);
 
   useEffect(() => {
     if (students.length > 0 && !printSelectedStudent) {
@@ -459,12 +459,12 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
 
   // Mock certificate details for a student
   const getSelectedStudentDetails = () => {
-    const s = mockDb.getStudents().find(x => x.id === printSelectedStudent);
+    const s = schoolDatabase.getStudents().find(x => x.id === printSelectedStudent);
     if (!s) return null;
-    const cls = mockDb.getClassrooms().find(c => c.id === s.classId);
-    const parent = mockDb.getParents().find(p => p.id === s.parentId);
-    const grades = mockDb.getGrades().filter(g => g.studentId === s.id);
-    const totalPayments = mockDb.getFeePayments()
+    const cls = schoolDatabase.getClassrooms().find(c => c.id === s.classId);
+    const parent = schoolDatabase.getParents().find(p => p.id === s.parentId);
+    const grades = schoolDatabase.getGrades().filter(g => g.studentId === s.id);
+    const totalPayments = schoolDatabase.getFeePayments()
       .filter(p => p.studentId === s.id)
       .reduce((sum, current) => sum + current.amountPaid, 0);
 
@@ -484,7 +484,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
 
   const triggerExportJSON = async () => {
     try {
-      const json = mockDb.exportBackupJSON();
+      const json = schoolDatabase.exportBackupJSON();
       if (window.electronAPI) {
         showToast('جاري استرجاع نسخة احتياطية محلية للحفظ المباشر...', 'info');
         const res = await window.electronAPI.saveFileDialog({
@@ -523,7 +523,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
 
   const triggerExportSQL = async () => {
     try {
-      const sql = mockDb.exportSQLBackup();
+      const sql = schoolDatabase.exportSQLBackup();
       if (window.electronAPI) {
         showToast('جاري تصدير ومطابقة سكربت SQLite التأسيسي...', 'info');
         const res = await window.electronAPI.saveFileDialog({
@@ -566,7 +566,7 @@ export default function DesktopHubView({ currentUser, onRefreshAll }: DesktopHub
       return;
     }
 
-    const success = mockDb.importBackupJSON(restoreJsonFile, currentUser.id, currentUser.fullName);
+    const success = schoolDatabase.importBackupJSON(restoreJsonFile, currentUser.id, currentUser.fullName);
     if (success) {
       showToast('تمت إعادة دمج واستعادة قاعدة البيانات بالذاكرة بنجاح تام! تحديث لوائح الأداء المالي والتعليمي متاح الآن.', 'success');
       setRestoreJsonFile('');
@@ -1400,7 +1400,7 @@ pause`;
                           </tr>
                         </thead>
                         <tbody>
-                          {mockDb.getSubjects().filter(sub => sub.stage === docData.cls?.stage).map((sub, sIdx) => {
+                          {schoolDatabase.getSubjects().filter(sub => sub.stage === docData.cls?.stage).map((sub, sIdx) => {
                             const gr = docData.grades.find(g => g.subjectId === sub.id);
                             const courseworkG = gr ? gr.courseworkGrade : 25 + (sIdx % 2) * 4;
                             const finalExamG = gr ? gr.finalExamGrade : 60 + (sIdx % 2) * 5;

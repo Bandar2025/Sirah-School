@@ -5,7 +5,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useCustomPrint } from '../hooks/useCustomPrint';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Classroom, Student, Subject, Grade } from '../types';
 import { 
   FileText, 
@@ -26,10 +26,10 @@ interface GradesViewProps {
 }
 
 export default function GradesView({ currentUser }: GradesViewProps) {
-  const [classrooms] = useState<Classroom[]>(mockDb.getClassrooms());
-  const [students] = useState<Student[]>(mockDb.getStudents());
-  const [subjects] = useState<Subject[]>(mockDb.getSubjects());
-  const [grades, setGrades] = useState<Grade[]>(mockDb.getGrades());
+  const [classrooms] = useState<Classroom[]>(schoolDatabase.getClassrooms());
+  const [students] = useState<Student[]>(schoolDatabase.getStudents());
+  const [subjects] = useState<Subject[]>(schoolDatabase.getSubjects());
+  const [grades, setGrades] = useState<Grade[]>(schoolDatabase.getGrades());
 
   const certificatePrintRef = useRef<HTMLDivElement>(null);
   const handlePrintCertificate = useCustomPrint(certificatePrintRef);
@@ -49,7 +49,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
   const [reportStudent, setReportStudent] = useState<Student | null>(null);
 
   const refreshData = () => {
-    setGrades(mockDb.getGrades());
+    setGrades(schoolDatabase.getGrades());
   };
 
   // Find students in class
@@ -90,7 +90,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
     const rawCw = tempCoursework[studentId] || '0';
     const rawFn = tempFinal[studentId] || '0';
 
-    mockDb.addOrUpdateGrade({
+    schoolDatabase.addOrUpdateGrade({
       studentId,
       subjectId: selectedSubjectId,
       examName: selectedExamName,
@@ -167,7 +167,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
     link.click();
     document.body.removeChild(link);
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id,
       currentUser.username,
       'تصدير كشف الدرجات',
@@ -353,7 +353,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
                 <div className="space-y-1">
                   <h3 className="font-bold text-slate-800 text-sm">وزارة التربية والتعليم - الجمهورية اليمنية</h3>
                   <h4 className="text-xs text-slate-400 font-medium">مكتب الأنشطة والاستمارات المدرسية والمتابعة القيادية</h4>
-                  <h4 className="text-xs text-slate-500">{mockDb.getSettings().schoolName}</h4>
+                  <h4 className="text-xs text-slate-500">{schoolDatabase.getSettings().schoolName}</h4>
                   <p className="text-[10px] text-slate-400 font-mono">المرجع: CRT-{Date.now().toString().slice(-6)}</p>
                 </div>
                 <div className="text-center font-bold text-3xl text-sky-600 leading-none p-2 bg-slate-50 border border-slate-100 rounded-xl">
@@ -364,7 +364,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               {/* Title label */}
               <div className="text-center space-y-1 py-2">
                 <h1 className="text-xl font-bold text-slate-800 tracking-tight font-sans">إشعار درجات أعمال السنة والتحصيل</h1>
-                <p className="text-xs text-slate-400 font-mono">العام الدراسي: {mockDb.getSettings().currentAcademicYear}</p>
+                <p className="text-xs text-slate-400 font-mono">العام الدراسي: {schoolDatabase.getSettings().currentAcademicYear}</p>
               </div>
 
               {/* Metadata columns */}
@@ -479,7 +479,7 @@ export default function GradesView({ currentUser }: GradesViewProps) {
               <button 
                 onClick={() => {
                   handlePrintCertificate();
-                  mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة شهادة تقدير علامات', `أمر طباعة لشهادة علامات الطالب: ${reportStudent.name}`);
+                  schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'طباعة شهادة تقدير علامات', `أمر طباعة لشهادة علامات الطالب: ${reportStudent.name}`);
                 }}
                 className="px-4 py-2 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
               >

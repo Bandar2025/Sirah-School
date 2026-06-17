@@ -6,7 +6,7 @@
 import React, { useState, useRef } from 'react';
 import { useCustomPrint } from '../hooks/useCustomPrint';
 import { useStickyPreferences } from '../hooks/useStickyPreferences';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Student, Parent, Classroom } from '../types';
 import { 
   Users, 
@@ -39,9 +39,9 @@ interface StudentsViewProps {
 }
 
 export default function StudentsView({ currentUser, initialAction = null, initialStatusFilter = null }: StudentsViewProps) {
-  const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
-  const [parents, setParents] = useState<Parent[]>(mockDb.getParents());
-  const [classrooms, setClassrooms] = useState<Classroom[]>(mockDb.getClassrooms());
+  const [students, setStudents] = useState<Student[]>(schoolDatabase.getStudents());
+  const [parents, setParents] = useState<Parent[]>(schoolDatabase.getParents());
+  const [classrooms, setClassrooms] = useState<Classroom[]>(schoolDatabase.getClassrooms());
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter || 'all');
 
@@ -116,9 +116,9 @@ export default function StudentsView({ currentUser, initialAction = null, initia
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setStudents(mockDb.getStudents());
-    setParents(mockDb.getParents());
-    setClassrooms(mockDb.getClassrooms());
+    setStudents(schoolDatabase.getStudents());
+    setParents(schoolDatabase.getParents());
+    setClassrooms(schoolDatabase.getClassrooms());
   };
 
   const handleOpenAddModal = () => {
@@ -200,7 +200,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
         return;
       }
 
-      mockDb.addStudent({
+      schoolDatabase.addStudent({
         name: sName,
         gender: sGender,
         birthDate: sBirthDate,
@@ -222,7 +222,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
         photo: sPhoto || undefined
       }, currentUser.id, currentUser.username);
     } else {
-      mockDb.updateStudent(editingStudent.id, {
+      schoolDatabase.updateStudent(editingStudent.id, {
         name: sName,
         gender: sGender,
         birthDate: sBirthDate,
@@ -251,7 +251,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
 
   const handleDeleteStudent = (id: string) => {
     if (window.confirm('هل أنت متأكد من حذف هذا الطالب نهائياً من قاعدة البيانات المحلية؟')) {
-      mockDb.deleteStudent(id, currentUser.id, currentUser.username);
+      schoolDatabase.deleteStudent(id, currentUser.id, currentUser.username);
       refreshData();
     }
   };
@@ -264,7 +264,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
       return;
     }
 
-    const newP = mockDb.addParent({
+    const newP = schoolDatabase.addParent({
       name: pName,
       nationalId: pNationalId,
       phone: pPhone,
@@ -309,7 +309,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف الطلاب', `تصدير ملف Excel/CSV للطلاب المعروضين (فلترة: ${statusFilter})`);
+    schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف الطلاب', `تصدير ملف Excel/CSV للطلاب المعروضين (فلترة: ${statusFilter})`);
   };
 
   // Simulated Import Excel Parser
@@ -332,7 +332,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
         
         // Only insert if valid and not redundant
         if (stdName && stdIdNum && !students.some(s => s.nationalId === stdIdNum)) {
-          mockDb.addStudent({
+          schoolDatabase.addStudent({
             name: stdName,
             gender: stdGenderVal,
             birthDate: '2016-01-01',
@@ -419,9 +419,9 @@ export default function StudentsView({ currentUser, initialAction = null, initia
     const cls = classrooms.find(c => c.id === student.classId);
     
     // Compute student logs / metrics dynamically
-    const studentAttendances = mockDb.getAttendances().filter(a => a.studentId === student.id);
-    const studentGrades = mockDb.getGrades().filter(g => g.studentId === student.id);
-    const studentPayments = mockDb.getFeePayments().filter(p => p.studentId === student.id);
+    const studentAttendances = schoolDatabase.getAttendances().filter(a => a.studentId === student.id);
+    const studentGrades = schoolDatabase.getGrades().filter(g => g.studentId === student.id);
+    const studentPayments = schoolDatabase.getFeePayments().filter(p => p.studentId === student.id);
     
     // Computed states
     const presentCount = studentAttendances.filter(a => a.status === 'present').length;
@@ -687,7 +687,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-bold text-slate-800">
                     {studentGrades.map(g => {
-                      const sub = mockDb.getSubjects().find(s => s.id === g.subjectId);
+                      const sub = schoolDatabase.getSubjects().find(s => s.id === g.subjectId);
                       return (
                         <tr key={g.id} className="hover:bg-slate-50/50">
                           <td className="py-3 px-4 text-slate-900 font-bold">{sub ? sub.name : 'مقرر رصد مدرسي'}</td>
@@ -727,7 +727,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
                   </span>
                 </div>
                 <div className="text-left font-bold text-slate-500 text-[10px]">
-                  العام المالي النشط: {mockDb.getSettings().currentAcademicYear}
+                  العام المالي النشط: {schoolDatabase.getSettings().currentAcademicYear}
                 </div>
               </div>
 
@@ -744,7 +744,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium">
                     {studentPayments.map(p => {
-                      const fType = mockDb.getFeeTypes().find(ft => ft.id === p.feeTypeId);
+                      const fType = schoolDatabase.getFeeTypes().find(ft => ft.id === p.feeTypeId);
                       return (
                         <tr key={p.id} className="hover:bg-slate-50/50">
                           <td className="py-2.5 px-4 font-extrabold text-slate-800">{fType ? fType.name : 'مساهمة مجتمعية عامة'}</td>
@@ -1264,7 +1264,7 @@ export default function StudentsView({ currentUser, initialAction = null, initia
               <button 
                 onClick={() => {
                   handlePrintIdCard();
-                  mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة هوية طالب', `أمر طباعة لبطاقة تعريف الطالب: ${selectedStudentForCard.name}`);
+                  schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'طباعة هوية طالب', `أمر طباعة لبطاقة تعريف الطالب: ${selectedStudentForCard.name}`);
                 }}
                 className="px-4 py-2 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
               >

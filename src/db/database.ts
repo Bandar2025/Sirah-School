@@ -38,123 +38,86 @@ const DEFAULT_PARENTS: Parent[] = [
 ];
 
 const DEFAULT_CLASSROOMS: Classroom[] = [
-  { id: 'class-1', name: 'الصف الأول الأساسي', stage: 'primary', maxCapacity: 55, roomNumber: 'وزاري-11' },
-  { id: 'class-2', name: 'الصف الثاني الأساسي', stage: 'primary', maxCapacity: 45, roomNumber: 'وزاري-12' },
-  { id: 'class-3', name: 'الصف الثالث الأساسي', stage: 'primary', maxCapacity: 45, roomNumber: 'وزاري-13' },
-  { id: 'class-4', name: 'الصف الرابع الأساسي', stage: 'primary', maxCapacity: 45, roomNumber: 'وزاري-14' },
-  { id: 'class-5', name: 'الصف الخامس الأساسي', stage: 'primary', maxCapacity: 45, roomNumber: 'وزاري-15' },
-  { id: 'class-6', name: 'الصف السادس الأساسي', stage: 'primary', maxCapacity: 45, roomNumber: 'وزاري-16' },
-  { id: 'class-7', name: 'الصف السابع الأساسي', stage: 'middle', maxCapacity: 45, roomNumber: 'وزاري-27' },
-  { id: 'class-8', name: 'الصف الثامن الأساسي', stage: 'middle', maxCapacity: 45, roomNumber: 'وزاري-28' }
+  { id: 'class-1', name: 'الصف الأول الأساسي', stage: 'primary', maxCapacity: 50, roomNumber: 'وزاري-11' },
+  { id: 'class-2', name: 'الصف الخامس الأساسي', stage: 'primary', maxCapacity: 50, roomNumber: 'وزاري-15' },
+  { id: 'class-3', name: 'الصف السابع الأساسي', stage: 'middle', maxCapacity: 50, roomNumber: 'وزاري-27' },
+  { id: 'class-4', name: 'الصف التاسع الأساسي', stage: 'middle', maxCapacity: 50, roomNumber: 'وزاري-29' },
+  { id: 'class-5', name: 'الصف الأول الثانوي', stage: 'high', maxCapacity: 50, roomNumber: 'ثانوي-31' }
 ];
 
 const DEFAULT_STUDENTS: Student[] = [
   // Class 1 (Grade 1 Basic) - 50 Students from Yemeni Ledger
-  { id: 'std-1-1', name: 'ابراهيم إسماعيل محمد سعيد الحداد', gender: 'male', birthDate: '2019-02-12', nationalId: '2019183741', seatNumber: '322101', studentNumber: 'STU-1447-001', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-2', name: 'احمد رمزي عبدالله حميد التاج', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183742', seatNumber: '322102', studentNumber: 'STU-1447-002', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-3', name: 'احمد محمد احمد سعيد مرشد', gender: 'male', birthDate: '2019-04-10', nationalId: '2019183743', seatNumber: '322103', studentNumber: 'STU-1447-003', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-4', name: 'احمد محمد احمد سيف علي الصبيحي', gender: 'male', birthDate: '2019-03-24', nationalId: '2019183744', seatNumber: '322104', studentNumber: 'STU-1447-004', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-1-5', name: 'احمد منصور محمد احمد علي', gender: 'male', birthDate: '2019-08-30', nationalId: '2019183745', seatNumber: '322105', studentNumber: 'STU-1447-005', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-6', name: 'اركان صادق عبدالله منصور قائد ديوان', gender: 'male', birthDate: '2019-01-20', nationalId: '2019183746', seatNumber: '322106', studentNumber: 'STU-1447-006', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-1-7', name: 'اسامة محمد امين عبدالله', gender: 'male', birthDate: '2019-10-18', nationalId: '2019183747', seatNumber: '322107', studentNumber: 'STU-1447-007', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-8', name: 'اسد محمد عبدالملك محمد احمد ناصر', gender: 'male', birthDate: '2019-06-05', nationalId: '2019183748', seatNumber: '322108', studentNumber: 'STU-1447-008', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-9', name: 'اسماعيل عبدالحكيم هزاع علي العبيدي', gender: 'male', birthDate: '2019-11-29', nationalId: '2019183749', seatNumber: '322109', studentNumber: 'STU-1447-009', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
-  { id: 'std-1-10', name: 'المجد مجيد قائد علي', gender: 'male', birthDate: '2019-07-15', nationalId: '2019183750', seatNumber: '322110', studentNumber: 'STU-1447-010', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-11', name: 'الياس بسام احمد علي قائد الأشول', gender: 'male', birthDate: '2019-04-02', nationalId: '2019183751', seatNumber: '322111', studentNumber: 'STU-1447-011', address: 'صنعاء - حي التضامن', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-12', name: 'امير فيصل محمد حسن ناجي الشرعبي', gender: 'male', birthDate: '2019-09-19', nationalId: '2019183752', seatNumber: '322112', studentNumber: 'STU-1447-012', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-13', name: 'انس فؤاد علي قائد عثمان المحمودي', gender: 'male', birthDate: '2019-05-22', nationalId: '2019183753', seatNumber: '322113', studentNumber: 'STU-1447-013', address: 'صنعاء - التحرير', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الوحدة' },
-  { id: 'std-1-14', name: 'ايمن عبدالملك علي محمد الجنيد', gender: 'male', birthDate: '2019-03-01', nationalId: '2019183754', seatNumber: '322114', studentNumber: 'STU-1447-014', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-15', name: 'بشار مسعود علي سعيد قاسم', gender: 'male', birthDate: '2019-12-04', nationalId: '2019183755', seatNumber: '322115', studentNumber: 'STU-1447-015', address: 'صنعاء - مسيك', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-16', name: 'جبران خليل جبران ناجي قاسم الودودي', gender: 'male', birthDate: '2019-02-28', nationalId: '2019183756', seatNumber: '322116', studentNumber: 'STU-1447-016', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-17', name: 'جود محمد نجيب احمد قائد السحلة', gender: 'male', birthDate: '2019-06-18', nationalId: '2019183757', seatNumber: '322117', studentNumber: 'STU-1447-017', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-18', name: 'حذيفة عارف سعيد هزاع علي الخزاعي', gender: 'male', birthDate: '2019-08-11', nationalId: '2019183758', seatNumber: '322118', studentNumber: 'STU-1447-018', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-19', name: 'حسام صالح علي عبدالله قائد الفقيه', gender: 'male', birthDate: '2019-07-26', nationalId: '2019183759', seatNumber: '322119', studentNumber: 'STU-1447-019', address: 'صنعاء - حي الجامعة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-20', name: 'حسين مسعود علي سعيد قاسم', gender: 'male', birthDate: '2019-12-05', nationalId: '2019183760', seatNumber: '322120', studentNumber: 'STU-1447-020', address: 'صنعاء - مسيك', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-21', name: 'حمزة عقيل عبده مسعد محمد', gender: 'male', birthDate: '2019-05-14', nationalId: '2019183761', seatNumber: '322121', studentNumber: 'STU-1447-021', address: 'صنعاء - هبرة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-22', name: 'خالد محمد محمد مصلح محمد', gender: 'male', birthDate: '2019-03-30', nationalId: '2019183762', seatNumber: '322122', studentNumber: 'STU-1447-022', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-1-23', name: 'رأفت صالح عبدالله علي محمد نصر', gender: 'male', birthDate: '2019-01-14', nationalId: '2019183763', seatNumber: '322123', studentNumber: 'STU-1447-023', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'AB-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-24', name: 'رياض عبدالباسط عبدالملك عبدالباري', gender: 'male', birthDate: '2019-04-20', nationalId: '2019183764', seatNumber: '322124', studentNumber: 'STU-1447-024', address: 'صنعاء - حي الوحدة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الوحدة' },
-  { id: 'std-1-25', name: 'ريدان محمد سلطان مسعد عثمان الحديلي', gender: 'male', birthDate: '2019-10-10', nationalId: '2019183765', seatNumber: '322125', studentNumber: 'STU-1447-025', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-26', name: 'زياد محمد مهيوب احمد محمد عثمان', gender: 'male', birthDate: '2019-06-25', nationalId: '2019183766', seatNumber: '322126', studentNumber: 'STU-1447-026', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-27', name: 'زياد نبيل فضل احمد قائد', gender: 'male', birthDate: '2019-08-01', nationalId: '2019183767', seatNumber: '322127', studentNumber: 'STU-1447-027', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-28', name: 'سرحان وليد سرحان هزاع علي الجحيفي', gender: 'male', birthDate: '2019-07-02', nationalId: '2019183768', seatNumber: '322128', studentNumber: 'STU-1447-028', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-29', name: 'سعيد هائل سعيد عبدالله عبده الحديلي', gender: 'male', birthDate: '2019-02-15', nationalId: '2019183769', seatNumber: '322129', studentNumber: 'STU-1447-029', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
-  { id: 'std-1-30', name: 'سليمان عمار محمد احمد سرحان دهمش', gender: 'male', birthDate: '2019-03-12', nationalId: '2019183770', seatNumber: '322130', studentNumber: 'STU-1447-030', address: 'صنعاء - هبرة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-31', name: 'سليمان فائز مهيوب احمد سعيد', gender: 'male', birthDate: '2019-11-05', nationalId: '2019183771', seatNumber: '322131', studentNumber: 'STU-1447-031', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-32', name: 'صهيب عبدالملك عبدالجبار بجاش مسعد الحديلي', gender: 'male', birthDate: '2019-05-18', nationalId: '2019183772', seatNumber: '322132', studentNumber: 'STU-1447-032', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-33', name: 'صهيب عمرو علي احمد احمد العلواني', gender: 'male', birthDate: '2019-04-14', nationalId: '2019183773', seatNumber: '322133', studentNumber: 'STU-1447-033', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-34', name: 'عابد فهد عبدالعزيز سرحان مهيوب العلواني', gender: 'male', birthDate: '2019-09-08', nationalId: '2019183774', seatNumber: '322134', studentNumber: 'STU-1447-034', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-1-35', name: 'عادل امين علي احمد حسن', gender: 'male', birthDate: '2019-02-23', nationalId: '2019183775', seatNumber: '322135', studentNumber: 'STU-1447-035', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-36', name: 'عامر فهد محمد محمد حفيظ', gender: 'male', birthDate: '2019-08-16', nationalId: '2019183776', seatNumber: '322136', studentNumber: 'STU-1447-036', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-37', name: 'عبدالرحمن رشاد عبده مارش مغلس', gender: 'male', birthDate: '2019-06-21', nationalId: '2019183777', seatNumber: '322137', studentNumber: 'STU-1447-037', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-38', name: 'عبدالرحمن عبدالرحيم علي عبدالله قائد الفقيه', gender: 'male', birthDate: '2019-10-09', nationalId: '2019183778', seatNumber: '322138', studentNumber: 'STU-1447-038', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-39', name: 'عبدالعزيز هيثم عبدالعزيز سرحان مهيوب العلواني', gender: 'male', birthDate: '2019-11-20', nationalId: '2019183779', seatNumber: '322139', studentNumber: 'STU-1447-039', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-40', name: 'عبدالكريم محمد عبده احمد علي عباد', gender: 'male', birthDate: '2019-05-30', nationalId: '2019183780', seatNumber: '322140', studentNumber: 'STU-1447-040', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
-  { id: 'std-1-41', name: 'عبدالكريم محمد هزاع محمد محمد الودودي', gender: 'male', birthDate: '2019-01-29', nationalId: '2019183781', seatNumber: '322141', studentNumber: 'STU-1447-041', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-42', name: 'عبدالله فيصل علي قائد', gender: 'male', birthDate: '2019-04-11', nationalId: '2019183782', seatNumber: '322142', studentNumber: 'STU-1447-042', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-43', name: 'عبدمجيد عبدالله محمد سعيد قائد الحداد', gender: 'male', birthDate: '2019-07-22', nationalId: '2019183783', seatNumber: '322143', studentNumber: 'STU-1447-043', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-44', name: 'عبدالملك محمد سرحان محمد محمد العلواني', gender: 'male', birthDate: '2019-08-30', nationalId: '2019183784', seatNumber: '322144', studentNumber: 'STU-1447-044', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-45', name: 'عبده بشير عبدالله علي', gender: 'male', birthDate: '2019-03-27', nationalId: '2019183785', seatNumber: '322145', studentNumber: 'STU-1447-045', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-1-46', name: 'عدي رائد عبده هزاع عامر', gender: 'male', birthDate: '2019-10-02', nationalId: '2019183786', seatNumber: '322146', studentNumber: 'STU-1447-046', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-1-47', name: 'عزالدين عادل عبدالله سعيد قائد رحيمان', gender: 'male', birthDate: '2019-11-19', nationalId: '2019183787', seatNumber: '322147', studentNumber: 'STU-1447-047', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-1-48', name: 'عزام فوزي محمد هزاع الصوفي', gender: 'male', birthDate: '2019-09-24', nationalId: '2019183788', seatNumber: '322148', studentNumber: 'STU-1447-048', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-1-49', name: 'عزام فيصل محمد حسن ناجي الشرعبي', gender: 'male', birthDate: '2019-04-12', nationalId: '2019183789', seatNumber: '322149', studentNumber: 'STU-1447-049', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-1-50', name: 'عزام محمد سالم سعيد', gender: 'male', birthDate: '2019-06-30', nationalId: '2019183790', seatNumber: '322150', studentNumber: 'STU-1447-050', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-1', name: 'ابراهيم إسماعيل محمد سعيد الحداد', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183741', seatNumber: '322101', studentNumber: 'STU-1447-001', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-2', name: 'احمد رمزي عبدالله حميد التاج', gender: 'male', birthDate: '2019-07-01', nationalId: '2019183742', seatNumber: '322102', studentNumber: 'STU-1447-002', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-3', name: 'احمد محمد احمد سعيد مرشد', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183743', seatNumber: '322103', studentNumber: 'STU-1447-003', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-4', name: 'احمد محمد احمد سيف علي الصبيحي', gender: 'male', birthDate: '2019-07-01', nationalId: '2019183744', seatNumber: '322104', studentNumber: 'STU-1447-004', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
+  { id: 'std-1-5', name: 'احمد منصور محمد احمد علي', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183745', seatNumber: '322105', studentNumber: 'STU-1447-005', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-6', name: 'اركان صادق عبدالله منصور قائد ديوان', gender: 'male', birthDate: '2019-07-01', nationalId: '2019183746', seatNumber: '322106', studentNumber: 'STU-1447-006', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
+  { id: 'std-1-7', name: 'اسامة محمد امين عبدالله', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183747', seatNumber: '322107', studentNumber: 'STU-1447-007', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-8', name: 'اسد محمد عبدالملك محمد احمد ناصر', gender: 'male', birthDate: '2019-07-01', nationalId: '2019183748', seatNumber: '322108', studentNumber: 'STU-1447-008', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-9', name: 'اسماعيل عبدالحكيم هزاع علي العبيدي', gender: 'male', birthDate: '2019-05-15', nationalId: '2019183749', seatNumber: '322109', studentNumber: 'STU-1447-009', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-1', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
+  { id: 'std-1-10', name: 'المجد مجيد قائد علي', gender: 'male', birthDate: '2019-07-01', nationalId: '2019183750', seatNumber: '322110', studentNumber: 'STU-1447-010', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-1', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
 
-  // Class 2 (Grade 2 Basic)
-  { id: 'std-2-1', name: 'ابراهيم احمد سعيد ناجي الطالبي', gender: 'male', birthDate: '2018-03-12', nationalId: '2018183701', seatNumber: '498101', studentNumber: 'STU-1447-201', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-2-2', name: 'ابراهيم بندر احمد عبده المنصوري', gender: 'male', birthDate: '2018-05-18', nationalId: '2018183702', seatNumber: '566102', studentNumber: 'STU-1447-202', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-2', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-2-3', name: 'ابراهيم محمد عبده قائد النجار', gender: 'male', birthDate: '2018-02-14', nationalId: '2018183703', seatNumber: '369103', studentNumber: 'STU-1447-203', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-2', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-2-4', name: 'ابراهيم منصور ناجي قاسم الودودي', gender: 'male', birthDate: '2018-11-05', nationalId: '2018183704', seatNumber: '509104', studentNumber: 'STU-1447-204', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-2-5', name: 'احمد عبدالسالم امين دحان العامري', gender: 'male', birthDate: '2018-08-30', nationalId: '2018183705', seatNumber: '330105', studentNumber: 'STU-1447-205', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-2', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  // Class 2 (Grade 5 Basic) - 10 Students
+  { id: 'std-1-11', name: 'الياس بسام احمد علي قائد الأشول', gender: 'male', birthDate: '2015-05-15', nationalId: '2019183751', seatNumber: '322111', studentNumber: 'STU-1447-011', address: 'صنعاء - حي التضامن', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-12', name: 'امير فيصل محمد حسن ناجي الشرعبي', gender: 'male', birthDate: '2015-07-01', nationalId: '2019183752', seatNumber: '322112', studentNumber: 'STU-1447-012', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-2', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-13', name: 'انس فؤاد علي قائد عثمان المحمودي', gender: 'male', birthDate: '2015-05-15', nationalId: '2019183753', seatNumber: '322113', studentNumber: 'STU-1447-013', address: 'صنعاء - التحرير', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-2', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الوحدة' },
+  { id: 'std-1-14', name: 'ايمن عبدالملك علي محمد الجنيد', gender: 'male', birthDate: '2015-07-01', nationalId: '2019183754', seatNumber: '322114', studentNumber: 'STU-1447-014', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-15', name: 'بشار مسعود علي سعيد قاسم', gender: 'male', birthDate: '2015-05-15', nationalId: '2019183755', seatNumber: '322115', studentNumber: 'STU-1447-015', address: 'صنعاء - مسيك', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-2', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-16', name: 'جبران خليل جبران ناجي قاسم الودودي', gender: 'male', birthDate: '2015-07-01', nationalId: '2019183756', seatNumber: '322116', studentNumber: 'STU-1447-016', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-2', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-17', name: 'جود محمد نجيب احمد قائد السحلة', gender: 'male', birthDate: '2015-05-15', nationalId: '2019183757', seatNumber: '322117', studentNumber: 'STU-1447-017', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-18', name: 'حذيفة عارف سعيد هزاع علي الخزاعي', gender: 'male', birthDate: '2015-07-01', nationalId: '2019183758', seatNumber: '322118', studentNumber: 'STU-1447-018', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-2', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-19', name: 'حسام صالح علي عبدالله قائد الفقيه', gender: 'male', birthDate: '2015-05-15', nationalId: '2019183759', seatNumber: '322119', studentNumber: 'STU-1447-019', address: 'صنعاء - حي الجامعة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-2', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-20', name: 'حسين مسعود علي سعيد قاسم', gender: 'male', birthDate: '2015-07-01', nationalId: '2019183760', seatNumber: '322120', studentNumber: 'STU-1447-020', address: 'صنعاء - مسيك', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-2', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
 
-  // Class 3 (Grade 3 Basic)
-  { id: 'std-3-1', name: 'احمد عبدالحكيم علي محمد الجنيد', gender: 'male', birthDate: '2017-04-20', nationalId: '2017183701', seatNumber: '527101', studentNumber: 'STU-1447-301', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-3', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-3-2', name: 'احمد منصور ناجي قاسم صالح الودوي', gender: 'male', birthDate: '2017-07-22', nationalId: '2017183702', seatNumber: '389102', studentNumber: 'STU-1447-302', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-3-3', name: 'ادهم امين ناجي قائد المحمودي', gender: 'male', birthDate: '2017-09-12', nationalId: '2017183703', seatNumber: '470103', studentNumber: 'STU-1447-303', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-3', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-3-4', name: 'الياس عبدالله عبده غانم سعيد', gender: 'male', birthDate: '2017-01-30', nationalId: '2017183704', seatNumber: '421104', studentNumber: 'STU-1447-304', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-3', avatar: '', bloodGroup: 'AB-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-3-5', name: 'انس مالك دبوان محمد علي الشرعبي', gender: 'male', birthDate: '2017-10-14', nationalId: '2017183705', seatNumber: '465105', studentNumber: 'STU-1447-305', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  // Class 3 (Grade 7 Basic) - 10 Students
+  { id: 'std-1-21', name: 'حمزة عقيل عبده مسعد محمد', gender: 'male', birthDate: '2013-05-15', nationalId: '2019183761', seatNumber: '322121', studentNumber: 'STU-1447-021', address: 'صنعاء - هبرة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-22', name: 'خالد محمد محمد مصلح محمد', gender: 'male', birthDate: '2013-07-01', nationalId: '2019183762', seatNumber: '322122', studentNumber: 'STU-1447-022', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-3', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
+  { id: 'std-1-23', name: 'رأفت صالح عبدالله علي محمد نصر', gender: 'male', birthDate: '2013-05-15', nationalId: '2019183763', seatNumber: '322123', studentNumber: 'STU-1447-023', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-3', avatar: '', bloodGroup: 'AB-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-24', name: 'رياض عبدالباسط عبدالملك عبدالباري', gender: 'male', birthDate: '2013-07-01', nationalId: '2019183764', seatNumber: '322124', studentNumber: 'STU-1447-024', address: 'صنعاء - حي الوحدة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الوحدة' },
+  { id: 'std-1-25', name: 'ريدان محمد سلطان مسعد عثمان الحديلي', gender: 'male', birthDate: '2013-05-15', nationalId: '2019183765', seatNumber: '322125', studentNumber: 'STU-1447-025', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-3', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-26', name: 'زياد محمد مهيوب احمد محمد عثمان', gender: 'male', birthDate: '2013-07-01', nationalId: '2019183766', seatNumber: '322126', studentNumber: 'STU-1447-026', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-3', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-27', name: 'زياد نبيل فضل احمد قائد', gender: 'male', birthDate: '2013-05-15', nationalId: '2019183767', seatNumber: '322127', studentNumber: 'STU-1447-027', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-28', name: 'سرحان وليد سرحان هزاع علي الجحيفي', gender: 'male', birthDate: '2013-07-01', nationalId: '2019183768', seatNumber: '322128', studentNumber: 'STU-1447-028', address: 'صنعاء - نقم', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-3', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-29', name: 'سعيد هائل سعيد عبدالله عبده الحديلي', gender: 'male', birthDate: '2013-05-15', nationalId: '2019183769', seatNumber: '322129', studentNumber: 'STU-1447-029', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-3', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
+  { id: 'std-1-30', name: 'سليمان عمار محمد احمد سرحان دهمش', gender: 'male', birthDate: '2013-07-01', nationalId: '2019183770', seatNumber: '322130', studentNumber: 'STU-1447-030', address: 'صنعاء - هبرة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-3', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
 
-  // Class 4 (Grade 4 Basic)
-  { id: 'std-4-1', name: 'احمد عبدالخالق حميد احمد التاج', gender: 'male', birthDate: '2016-03-24', nationalId: '2016183701', seatNumber: '416101', studentNumber: 'STU-1447-401', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-4', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-4-2', name: 'احمد عبدالرقيب احمد علي العلواني', gender: 'male', birthDate: '2016-08-30', nationalId: '2016183702', seatNumber: '560102', studentNumber: 'STU-1447-402', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-4', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
-  { id: 'std-4-3', name: 'احمد محمد حسن سالم', gender: 'male', birthDate: '2016-07-15', nationalId: '2016183703', seatNumber: '513103', studentNumber: 'STU-1447-403', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-4', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-4-4', name: 'اسامة بسام محمد عثمان البرحي', gender: 'male', birthDate: '2016-11-20', nationalId: '2016183704', seatNumber: '432104', studentNumber: 'STU-1447-404', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-4', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-4-5', name: 'انور طلال عبده علي سيف', gender: 'male', birthDate: '2016-05-14', nationalId: '2016183705', seatNumber: '411105', studentNumber: 'STU-1447-405', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-4', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  // Class 4 (Grade 9 Basic) - 10 Students
+  { id: 'std-1-31', name: 'سليمان فائز مهيوب احمد سعيد', gender: 'male', birthDate: '2011-05-15', nationalId: '2019183771', seatNumber: '322131', studentNumber: 'STU-1447-031', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-4', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-32', name: 'صهيب عبدالملك عبدالجبار بجاش مسعد الحديلي', gender: 'male', birthDate: '2011-07-01', nationalId: '2019183772', seatNumber: '322132', studentNumber: 'STU-1447-032', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-4', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-33', name: 'صهيب عمرو علي احمد احمد العلواني', gender: 'male', birthDate: '2011-05-15', nationalId: '2019183773', seatNumber: '322133', studentNumber: 'STU-1447-033', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-4', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-34', name: 'عابد فهد عبدالعزيز سرحان مهيوب العلواني', gender: 'male', birthDate: '2011-07-01', nationalId: '2019183774', seatNumber: '322134', studentNumber: 'STU-1447-034', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-4', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
+  { id: 'std-1-35', name: 'عادل امين علي احمد حسن', gender: 'male', birthDate: '2011-05-15', nationalId: '2019183775', seatNumber: '322135', studentNumber: 'STU-1447-035', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-4', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-36', name: 'عامر فهد محمد محمد حفيظ', gender: 'male', birthDate: '2011-07-01', nationalId: '2019183776', seatNumber: '322136', studentNumber: 'STU-1447-036', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-4', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-37', name: 'عبدالرحمن رشاد عبده مارش مغلس', gender: 'male', birthDate: '2011-05-15', nationalId: '2019183777', seatNumber: '322137', studentNumber: 'STU-1447-037', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-4', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-38', name: 'عبدالرحمن عبدالرحيم علي عبدالله قائد الفقيه', gender: 'male', birthDate: '2011-07-01', nationalId: '2019183778', seatNumber: '322138', studentNumber: 'STU-1447-038', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-4', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-39', name: 'عبدالعزيز هيثم عبدالعزيز سرحان مهيوب العلواني', gender: 'male', birthDate: '2011-05-15', nationalId: '2019183779', seatNumber: '322139', studentNumber: 'STU-1447-039', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-4', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-40', name: 'عبدالكريم محمد عبده احمد علي عباد', gender: 'male', birthDate: '2011-07-01', nationalId: '2019183780', seatNumber: '322140', studentNumber: 'STU-1447-040', address: 'صنعاء - باب اليمن', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-4', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية صنعاء القديمة' },
 
-  // Class 5 (Grade 5 Basic)
-  { id: 'std-5-1', name: 'ابراهيم منير محمد الحاج قائد', gender: 'male', birthDate: '2015-02-12', nationalId: '2015183701', seatNumber: '392101', studentNumber: 'STU-1447-501', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-5-2', name: 'احمد سعيد هزاع سيف الصبيحي', gender: 'male', birthDate: '2015-05-15', nationalId: '2015183702', seatNumber: '418102', studentNumber: 'STU-1447-502', address: 'صنعاء - المطار', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-5', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
-  { id: 'std-5-3', name: 'احمد عبدالله محمد سعيد العمري', gender: 'male', birthDate: '2015-04-10', nationalId: '2015183703', seatNumber: '480103', studentNumber: 'STU-1447-503', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-5', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-5-4', name: 'ادهم عبدالواسع محمد قاسم حنش', gender: 'male', birthDate: '2015-10-18', nationalId: '2015183704', seatNumber: '566104', studentNumber: 'STU-1447-504', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-5-5', name: 'اسامه عبدالحكيم هزاع علي العبيدي', gender: 'male', birthDate: '2015-01-20', nationalId: '2015183705', seatNumber: '362105', studentNumber: 'STU-1447-505', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-5', avatar: '', bloodGroup: 'AB-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-
-  // Class 6 (Grade 6 Basic)
-  { id: 'std-6-1', name: 'محمود امين عبدالوهاب سلام العريقي', gender: 'male', birthDate: '2014-03-12', nationalId: '2014183701', seatNumber: '310101', studentNumber: 'STU-1447-601', address: 'صنعاء - حي الرباط', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-6', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-6-2', name: 'أكرم رمزي محمد أحمد القدسي', gender: 'male', birthDate: '2014-06-15', nationalId: '2014183702', seatNumber: '310102', studentNumber: 'STU-1447-602', address: 'صنعاء - الرقاص', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-6', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
-  { id: 'std-6-3', name: 'حازم غازي عبدالرحمن عقلان', gender: 'male', birthDate: '2014-09-22', nationalId: '2014183703', seatNumber: '310103', studentNumber: 'STU-1447-603', address: 'صنعاء - حدة السكنية', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-6', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
-  { id: 'std-6-4', name: 'شرف الدين عادل عبدالسلام الصبري', gender: 'male', birthDate: '2014-11-20', nationalId: '2014183704', seatNumber: '310104', studentNumber: 'STU-1447-604', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-6', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-6-5', name: 'مصطفى نجيب عبده اليوسفي', gender: 'male', birthDate: '2014-01-18', nationalId: '2014183705', seatNumber: '310105', studentNumber: 'STU-1447-605', address: 'صنعاء - التحرير', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-6', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية التحرير' },
-
-  // Class 7 (Grade 7 Basic)
-  { id: 'std-7-1', name: 'عبدالكريم طه يحيى عياش المنهي', gender: 'male', birthDate: '2013-02-14', nationalId: '2013183701', seatNumber: '420101', studentNumber: 'STU-1447-701', address: 'تعز - المسبح', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-7', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'تعز', district: 'مديرية القاهرة' },
-  { id: 'std-7-2', name: 'وضاح جلال منصور الصلوي', gender: 'male', birthDate: '2013-05-30', nationalId: '2013183702', seatNumber: '420102', studentNumber: 'STU-1447-702', address: 'تعز - الحوبان', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-7', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'تعز', district: 'مديرية التعزية' },
-  { id: 'std-7-3', name: 'عدنان مالك علي قاسم الشيباني', gender: 'male', birthDate: '2013-08-11', nationalId: '2013183703', seatNumber: '420103', studentNumber: 'STU-1447-703', address: 'تعز - النسيرية', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-7', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'تعز', district: 'مديرية القاهرة' },
-  { id: 'std-7-4', name: 'عمران بسام صادق المذحجي', gender: 'male', birthDate: '2013-10-09', nationalId: '2013183704', seatNumber: '420104', studentNumber: 'STU-1447-704', address: 'تعز - الجحملية', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-7', avatar: '', bloodGroup: 'AB-', status: 'active', governorate: 'تعز', district: 'مديرية صالة' },
-  { id: 'std-7-5', name: 'حمزة فضل صالح البركاني', gender: 'male', birthDate: '2013-12-04', nationalId: '2013183705', seatNumber: '420105', studentNumber: 'STU-1447-705', address: 'تعز - بير باشا', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-7', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'تعز', district: 'مديرية المظفر' },
-
-  // Class 8 (Grade 8 Basic)
-  { id: 'std-8-1', name: 'سعيد مصلح سعيد عبدالله المخلافي', gender: 'male', birthDate: '2012-04-12', nationalId: '2012183701', seatNumber: '530101', studentNumber: 'STU-1447-801', address: 'تعز - عصيفرة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-8', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'تعز', district: 'مديرية القاهرة' },
-  { id: 'std-8-2', name: 'قحطان توفيق أمين دحان العامري', gender: 'male', birthDate: '2012-07-26', nationalId: '2012183702', seatNumber: '530102', studentNumber: 'STU-1447-802', address: 'تعز - الحوبان', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-8', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'تعز', district: 'مديرية التعزية' },
-  { id: 'std-8-3', name: 'شادي منصور ناجي قاسم الودودي', gender: 'male', birthDate: '2012-09-19', nationalId: '2012183703', seatNumber: '530103', studentNumber: 'STU-1447-803', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-8', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-8-4', name: 'منتصر نبيل فضل الأشول', gender: 'male', birthDate: '2012-10-10', nationalId: '2012183704', seatNumber: '530104', studentNumber: 'STU-1447-804', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-8', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
-  { id: 'std-8-5', name: 'غسان هائل سعيد العلواني', gender: 'male', birthDate: '2012-11-29', nationalId: '2012183705', seatNumber: '530105', studentNumber: 'STU-1447-805', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-8', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' }
+  // Class 5 (Grade 1 Secondary / High) - 10 Students
+  { id: 'std-1-41', name: 'عبدالكريم محمد هزاع محمد محمد الودودي', gender: 'male', birthDate: '2009-05-15', nationalId: '2019183781', seatNumber: '322141', studentNumber: 'STU-1447-041', address: 'صنعاء - الحصبة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-42', name: 'عبدالله فيصل علي قائد', gender: 'male', birthDate: '2009-07-01', nationalId: '2019183782', seatNumber: '322142', studentNumber: 'STU-1447-042', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-5', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-43', name: 'عبدمجيد عبدالله محمد سعيد قائد الحداد', gender: 'male', birthDate: '2009-05-15', nationalId: '2019183783', seatNumber: '322143', studentNumber: 'STU-1447-043', address: 'صنعاء - الستين', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-5', avatar: '', bloodGroup: 'B-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-44', name: 'عبدالملك محمد سرحان محمد محمد العلواني', gender: 'male', birthDate: '2009-07-01', nationalId: '2019183784', seatNumber: '322144', studentNumber: 'STU-1447-044', address: 'صنعاء - حدة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'AB+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-45', name: 'عبده بشير عبدالله علي', gender: 'male', birthDate: '2009-05-15', nationalId: '2019183785', seatNumber: '322145', studentNumber: 'STU-1447-045', address: 'صنعاء - الصافية', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-5', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية السبعين' },
+  { id: 'std-1-46', name: 'عدي رائد عبده هزاع عامر', gender: 'male', birthDate: '2009-07-01', nationalId: '2019183786', seatNumber: '322146', studentNumber: 'STU-1447-046', address: 'صنعاء - الجراف', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-5', avatar: '', bloodGroup: 'A-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية الثورة' },
+  { id: 'std-1-47', name: 'عزالدين عادل عبدالله سعيد قائد رحيمان', gender: 'male', birthDate: '2009-05-15', nationalId: '2019183787', seatNumber: '322147', studentNumber: 'STU-1447-047', address: 'صنعاء - الروضة', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'B+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية بني الحارث' },
+  { id: 'std-1-48', name: 'عزام فوزي محمد هزاع الصوفي', gender: 'male', birthDate: '2009-07-01', nationalId: '2019183788', seatNumber: '322148', studentNumber: 'STU-1447-048', address: 'صنعاء - شيرتون', medicalDetails: 'سليم', parentId: 'prt-2', classId: 'class-5', avatar: '', bloodGroup: 'O+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية شعوب' },
+  { id: 'std-1-49', name: 'عزام فيصل محمد حسن ناجي الشرعبي', gender: 'male', birthDate: '2009-05-15', nationalId: '2019183789', seatNumber: '322149', studentNumber: 'STU-1447-049', address: 'صنعاء - السنينة', medicalDetails: 'سليم', parentId: 'prt-3', classId: 'class-5', avatar: '', bloodGroup: 'O-', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' },
+  { id: 'std-1-50', name: 'عزام محمد سالم سعيد', gender: 'male', birthDate: '2009-07-01', nationalId: '2019183790', seatNumber: '322150', studentNumber: 'STU-1447-050', address: 'صنعاء - عصر', medicalDetails: 'سليم', parentId: 'prt-1', classId: 'class-5', avatar: '', bloodGroup: 'A+', status: 'active', governorate: 'أمانة العاصمة', district: 'مديرية معين' }
 ];
 
 const DEFAULT_TEACHERS: Teacher[] = [
   { id: 'tch-1', name: 'أ. جلال منصور الصلوي', nationalId: '1044231201', qualification: 'بكالوريوس علوم متميز - جامعة صنعاء', experienceYears: 14, email: 'galal.s@school.edu.ye', phone: '775566778', salary: 180000, specialty: 'القرآن والتربية الإسلامية' },
   { id: 'tch-2', name: 'أ. نجيب عبده اليوسفي', nationalId: '1055312302', qualification: 'ليسانس لغة عربية - جامعة تعز', experienceYears: 11, email: 'najeeb.y@school.edu.ye', phone: '771122331', salary: 150000, specialty: 'اللغة العربية والاجتماعيات' },
-  { id: 'tch-3', name: 'أ. بلقيس علي الهمداني', nationalId: '1066412303', qualification: 'ماجستير رياضيات تطبيقية - جامعة ذمار', experienceYears: 16, email: 'balqis.h@school.edu.ye', phone: '772233442', salary: 210000, specialty: 'الرياضيات والعلوم للمرحلة الأساسية' }
+  { id: 'tch-3', name: 'أ. بلقيس علي الهمداني', nationalId: '1066412303', qualification: 'ماجستير رياضيات تطبيقية - جامعة ذمار', experienceYears: 16, email: 'balqis.h@school.edu.ye', phone: '772233442', salary: 210000, specialty: 'الرياضيات والعلوم للمرحلة الأساسية' },
+  { id: 'tch-4', name: 'أ. طارق عبد السلام اليحمدي', nationalId: '1077512304', qualification: 'بكالوريوس فيزياء تطبيقية - جامعة صنعاء', experienceYears: 9, email: 'tareq.physics@school.edu.ye', phone: '771243122', salary: 185000, specialty: 'الفيزياء والرياضيات للمرحلة الثانوية' },
+  { id: 'tch-5', name: 'أ. أروى عبد الله المطاع', nationalId: '1088612305', qualification: 'بكالوريوس كيمياء تفصيلية - جامعة تعز', experienceYears: 12, email: 'arwa.chem@school.edu.ye', phone: '771542133', salary: 180000, specialty: 'الكيمياء والأحياء للثانوي' },
+  { id: 'tch-6', name: 'أ. يوسف منصر البركاني', nationalId: '1099712306', qualification: 'ليسانس تاريخ وحضارة - جامعة ذمار', experienceYears: 15, email: 'yousef.hist@school.edu.ye', phone: '772998311', salary: 145000, specialty: 'الدراسات الاجتماعية والمواطنة' },
+  { id: 'tch-7', name: 'أ. نادية عبد المقتدر الصبري', nationalId: '1100812307', qualification: 'ماجستير لغة إنجليزية وترجمة - جامعة صنعاء', experienceYears: 10, email: 'nadia.english@school.edu.ye', phone: '773199222', salary: 195000, specialty: 'اللغة الإنجليزية وآدابها المتقدمة' },
+  { id: 'tch-8', name: 'أ. عبد الجليل فضل عثمان قاسم', nationalId: '1111912308', qualification: 'بكالوريوس حاسوب وبرمجيات - جامعة إب', experienceYears: 7, email: 'jaleel.pc@school.edu.ye', phone: '772251144', salary: 170000, specialty: 'برمجة وتكنولوجيا المعلومات' },
+  { id: 'tch-9', name: 'أ. سلوى علي عبد الخالق الشرعبي', nationalId: '1122012309', qualification: 'بكالوريوس تربية وعلم نفس - جامعة تعز', experienceYears: 13, email: 'salwa.edu@school.edu.ye', phone: '770932144', salary: 155000, specialty: 'التربية الإسلامية وقضايا السلوك والمتابعة' },
+  { id: 'tch-10', name: 'أ. عادل عبد الله سعيد الشوافي', nationalId: '1133112310', qualification: 'بكالوريوس تربية رياضة وفنون - جامعة صنعاء', experienceYears: 11, email: 'adel.sport@school.edu.ye', phone: '771234411', salary: 140000, specialty: 'النشاطات الرياضية والصحة العامة' }
 ];
 
 const DEFAULT_SUBJECTS: Subject[] = [
@@ -220,7 +183,12 @@ const DEFAULT_SETTINGS: SchoolSettings = {
   principalName: 'أ. طه بن يحيى عياش المنهي',
   vicePrincipalName: 'أ. عبد السلام امين هزاع',
   studentAffairsName: 'أ. سلوى عبدالله عبد اللطيف الشيباني',
-  semester: 'first'
+  semester: 'first',
+  isConfigured: false,
+  licenseKey: 'SR-TRIAL-0000-0000',
+  activationStatus: 'trial',
+  expiryDate: '2027-06-15',
+  version: '2.5.0-YEM'
 };
 
 const DEFAULT_AUDIT_LOGS: AuditLog[] = [
@@ -228,8 +196,8 @@ const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   { id: 'log-2', userId: 'usr-1', username: 'admin', action: 'تعديل الرسوم المدرسية', details: 'تحديث رسوم النقل والباص لتكون 1500 ريال', timestamp: '2026-06-15T09:12:00.000Z' }
 ];
 
-// In-Memory Database Engine holding State
-class LocalSQLiteEngine {
+// Real Central Database Controller - Yemen School Management System
+class SchoolDatabaseController {
   private users: User[] = [];
   private auditLogs: AuditLog[] = [];
   private parents: Parent[] = [];
@@ -246,14 +214,14 @@ class LocalSQLiteEngine {
   private settings: SchoolSettings = DEFAULT_SETTINGS;
 
   constructor() {
-    this.loadFromStorage();
+    this.refreshLocalCache();
   }
 
-  private loadFromStorage() {
+  private refreshLocalCache() {
     try {
-      // Sync XMLHttpRequest to obtain real database contents from backend Express SQLite server!
+      // Synchronous initialization to ensure data is ready before React mount
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', '/api/db/get', false); // true synchronicity perfectly preserving 15+ React modules
+      xhr.open('GET', '/api/db/get', false); 
       xhr.send(null);
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.responseText);
@@ -273,15 +241,15 @@ class LocalSQLiteEngine {
           this.feePayments = d.fee_payments || [];
           this.behaviorEvaluations = d.behavior_evaluations || [];
           this.settings = d.settings || DEFAULT_SETTINGS;
-          console.log('[DEBUG] Real SQLite data cache successfully initialized in client memory!');
+          console.log('[DATABASE] Client cache synchronized with physical SQLite file.');
           return;
         }
       }
     } catch (e) {
-      console.error('[SQLITE CLIENT ERROR] Failed to fetch SQLITE data. Falling back to in-memory/local:', e);
+      console.error('[DATABASE] Cache sync failure:', e);
     }
 
-    // fallback in case of connection absence / offline preview testing before start
+    // Default load if server is unreachable
     this.users = [...DEFAULT_USERS];
     this.parents = [...DEFAULT_PARENTS];
     this.classrooms = [...DEFAULT_CLASSROOMS];
@@ -293,53 +261,44 @@ class LocalSQLiteEngine {
     this.grades = [...DEFAULT_GRADES];
     this.feeTypes = [...DEFAULT_FEE_TYPES];
     this.feePayments = [...DEFAULT_FEE_PAYMENTS];
-    this.behaviorEvaluations = [];
     this.settings = { ...DEFAULT_SETTINGS };
   }
 
-  private saveToStorage(key: string, data: any) {
-    // 1. Maintain local in-memory representation so UI does not stutter
-    localStorage.setItem(`manara_db_${key}`, JSON.stringify(data));
-
-    // 2. Map standard frontend key names into SQLite table names
+  private persist(key: string, data: any) {
     let sqlTable = key;
     if (key === 'attendances') sqlTable = 'attendance';
-    if (key === 'fee_types') sqlTable = 'fee_types';
-    if (key === 'fee_payments') sqlTable = 'fee_payments';
-    if (key === 'behavior_evaluations') sqlTable = 'behavior_evaluations';
     if (key === 'audit_logs') sqlTable = 'audit_logs';
 
-    // 3. Replicate instantly to back-end server.ts SQLite database 
     if (key === 'settings') {
       fetch('/api/db/save-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings: data })
-      }).catch(err => console.error('[SQLITE PERSISTENCE ERROR] Settings replication failed:', err));
+      });
     } else {
       fetch('/api/db/save-table', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ table: sqlTable, rows: data })
-      }).catch(err => console.error(`[SQLITE PERSISTENCE ERROR] Table ${sqlTable} replication failed:`, err));
+      });
     }
   }
 
   private saveAll() {
-    this.saveToStorage('users', this.users);
-    this.saveToStorage('parents', this.parents);
-    this.saveToStorage('students', this.students);
-    this.saveToStorage('teachers', this.teachers);
-    this.saveToStorage('classrooms', this.classrooms);
-    this.saveToStorage('subjects', this.subjects);
-    this.saveToStorage('schedules', this.schedules);
-    this.saveToStorage('attendances', this.attendances);
-    this.saveToStorage('grades', this.grades);
-    this.saveToStorage('fee_types', this.feeTypes);
-    this.saveToStorage('fee_payments', this.feePayments);
-    this.saveToStorage('behavior_evaluations', this.behaviorEvaluations);
-    this.saveToStorage('settings', this.settings);
-    this.saveToStorage('audit_logs', this.auditLogs);
+    this.persist('users', this.users);
+    this.persist('parents', this.parents);
+    this.persist('students', this.students);
+    this.persist('teachers', this.teachers);
+    this.persist('classrooms', this.classrooms);
+    this.persist('subjects', this.subjects);
+    this.persist('schedules', this.schedules);
+    this.persist('attendances', this.attendances);
+    this.persist('grades', this.grades);
+    this.persist('fee_types', this.feeTypes);
+    this.persist('fee_payments', this.feePayments);
+    this.persist('behavior_evaluations', this.behaviorEvaluations);
+    this.persist('settings', this.settings);
+    this.persist('audit_logs', this.auditLogs);
   }
 
   public resetToDefaults() {
@@ -363,7 +322,7 @@ class LocalSQLiteEngine {
         audit_logs: DEFAULT_AUDIT_LOGS
       }})
     }).then(() => {
-      this.loadFromStorage();
+      this.refreshLocalCache();
       location.reload();
     }).catch(err => {
       console.error('Failed to reset to defaults on backend:', err);
@@ -378,7 +337,6 @@ class LocalSQLiteEngine {
       this.grades = [...DEFAULT_GRADES];
       this.feeTypes = [...DEFAULT_FEE_TYPES];
       this.feePayments = [...DEFAULT_FEE_PAYMENTS];
-      this.behaviorEvaluations = [];
       this.settings = { ...DEFAULT_SETTINGS };
       this.saveAll();
     });
@@ -430,7 +388,7 @@ class LocalSQLiteEngine {
       timestamp: new Date().toISOString()
     };
     this.auditLogs.unshift(newLog);
-    this.saveToStorage('audit_logs', this.auditLogs);
+    this.persist('audit_logs', this.auditLogs);
     return newLog;
   }
 
@@ -447,13 +405,13 @@ class LocalSQLiteEngine {
       createdAt: new Date().toISOString()
     };
     this.users.push(newUser);
-    this.saveToStorage('users', this.users);
+    this.persist('users', this.users);
     this.addAuditLog(activeUser, activeUsername, 'إضافة مستخدم جديد', `تفعيل حساب مستخدم: ${newUser.username} بصلاحية ${newUser.role}`);
     return newUser;
   }
   public updateUser(id: string, updated: Partial<User>, activeUser: string, activeUsername: string): User {
     this.users = this.users.map(u => u.id === id ? { ...u, ...updated } : u);
-    this.saveToStorage('users', this.users);
+    this.persist('users', this.users);
     const user = this.users.find(u => u.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل معلومات مستخدم', `تحديث بيانات حساب مستخدم: ${user?.username}`);
     return user;
@@ -461,7 +419,7 @@ class LocalSQLiteEngine {
   public deleteUser(id: string, activeUser: string, activeUsername: string) {
     const target = this.users.find(u => u.id === id);
     this.users = this.users.filter(u => u.id !== id);
-    this.saveToStorage('users', this.users);
+    this.persist('users', this.users);
     if (target) {
       this.addAuditLog(activeUser, activeUsername, 'حذف مستخدم', `إزالة مستخدم نهائياً من الصلاحيات: ${target.username}`);
     }
@@ -475,13 +433,13 @@ class LocalSQLiteEngine {
       id: `prt-${Date.now()}`
     };
     this.parents.push(newParent);
-    this.saveToStorage('parents', this.parents);
+    this.persist('parents', this.parents);
     this.addAuditLog(activeUser, activeUsername, 'تسجيل ولي أمر', `إضافة ولي الأمر: ${newParent.name} برقم هوية ${newParent.nationalId}`);
     return newParent;
   }
   public updateParent(id: string, updated: Partial<Parent>, activeUser: string, activeUsername: string): Parent {
     this.parents = this.parents.map(p => p.id === id ? { ...p, ...updated } : p);
-    this.saveToStorage('parents', this.parents);
+    this.persist('parents', this.parents);
     const parent = this.parents.find(p => p.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل ولي أمر', `تعديل بيانات ولي الأمر: ${parent?.name}`);
     return parent;
@@ -495,13 +453,13 @@ class LocalSQLiteEngine {
       id: `std-${Date.now()}`
     };
     this.students.push(newStudent);
-    this.saveToStorage('students', this.students);
+    this.persist('students', this.students);
     this.addAuditLog(activeUser, activeUsername, 'تسجيل طالب جديد', `قبول وقيد الطالب: ${newStudent.name} وتسكينه بالفصل`);
     return newStudent;
   }
   public updateStudent(id: string, updated: Partial<Student>, activeUser: string, activeUsername: string): Student {
     this.students = this.students.map(s => s.id === id ? { ...s, ...updated } : s);
-    this.saveToStorage('students', this.students);
+    this.persist('students', this.students);
     const student = this.students.find(s => s.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل بيانات طالب', `تحديث السجل الإداري والأكاديمي للطالب: ${student?.name}`);
     return student;
@@ -509,7 +467,7 @@ class LocalSQLiteEngine {
   public deleteStudent(id: string, activeUser: string, activeUsername: string) {
     const student = this.students.find(s => s.id === id);
     this.students = this.students.filter(s => s.id !== id);
-    this.saveToStorage('students', this.students);
+    this.persist('students', this.students);
     if (student) {
       this.addAuditLog(activeUser, activeUsername, 'شطب وإزالة طالب', `إسقاط قيد الطالب نهائياً: ${student.name}`);
     }
@@ -525,7 +483,7 @@ class LocalSQLiteEngine {
       }
       return s;
     });
-    this.saveToStorage('students', this.students);
+    this.persist('students', this.students);
     const fromCls = this.classrooms.find(c => c.id === fromClassId)?.name || fromClassId;
     const toCls = this.classrooms.find(c => c.id === toClassId)?.name || toClassId;
     this.addAuditLog(activeUser, activeUsername, 'ترقية الطلاب لصف دراسي أعلى', `ترفيع عدد ${count} طالباً بنجاح من فصل (${fromCls}) إلى فصل (${toCls})`);
@@ -540,13 +498,13 @@ class LocalSQLiteEngine {
       id: `tch-${Date.now()}`
     };
     this.teachers.push(newTeacher);
-    this.saveToStorage('teachers', this.teachers);
+    this.persist('teachers', this.teachers);
     this.addAuditLog(activeUser, activeUsername, 'إضافة معلم وكادر', `التعاقد مع المعلم: ${newTeacher.name} بتخصص ${newTeacher.specialty}`);
     return newTeacher;
   }
   public updateTeacher(id: string, updated: Partial<Teacher>, activeUser: string, activeUsername: string): Teacher {
     this.teachers = this.teachers.map(t => t.id === id ? { ...t, ...updated } : t);
-    this.saveToStorage('teachers', this.teachers);
+    this.persist('teachers', this.teachers);
     const teacher = this.teachers.find(t => t.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل بيانات معلم', `تعديل ملف المعلم: ${teacher?.name}`);
     return teacher;
@@ -554,7 +512,7 @@ class LocalSQLiteEngine {
   public deleteTeacher(id: string, activeUser: string, activeUsername: string) {
     const tch = this.teachers.find(t => t.id === id);
     this.teachers = this.teachers.filter(t => t.id !== id);
-    this.saveToStorage('teachers', this.teachers);
+    this.persist('teachers', this.teachers);
     if (tch) {
       this.addAuditLog(activeUser, activeUsername, 'إنهاء عقد معلم', `فصل أو حذف المعلم من سجلات المدرسة: ${tch.name}`);
     }
@@ -568,13 +526,13 @@ class LocalSQLiteEngine {
       id: `class-${Date.now()}`
     };
     this.classrooms.push(newCls);
-    this.saveToStorage('classrooms', this.classrooms);
+    this.persist('classrooms', this.classrooms);
     this.addAuditLog(activeUser, activeUsername, 'إضافة فصل دراسي', `تأسيس الفصل الدراسي الجديد: ${newCls.name} بغرفة رقم ${newCls.roomNumber}`);
     return newCls;
   }
   public updateClassroom(id: string, updated: Partial<Classroom>, activeUser: string, activeUsername: string): Classroom {
     this.classrooms = this.classrooms.map(c => c.id === id ? { ...c, ...updated } : c);
-    this.saveToStorage('classrooms', this.classrooms);
+    this.persist('classrooms', this.classrooms);
     const cl = this.classrooms.find(c => c.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل فصل دراسي', `تحديث بيانات غرف وبث صفوف الفصل: ${cl?.name}`);
     return cl;
@@ -582,7 +540,7 @@ class LocalSQLiteEngine {
   public deleteClassroom(id: string, activeUser: string, activeUsername: string) {
     const cl = this.classrooms.find(c => c.id === id);
     this.classrooms = this.classrooms.filter(c => c.id !== id);
-    this.saveToStorage('classrooms', this.classrooms);
+    this.persist('classrooms', this.classrooms);
     if (cl) {
       this.addAuditLog(activeUser, activeUsername, 'أرشفة وحذف فصل', `إزالة الفصل الدراسي من الخدمة النشطة: ${cl.name}`);
     }
@@ -596,13 +554,13 @@ class LocalSQLiteEngine {
       id: `sub-${Date.now()}`
     };
     this.subjects.push(newSub);
-    this.saveToStorage('subjects', this.subjects);
+    this.persist('subjects', this.subjects);
     this.addAuditLog(activeUser, activeUsername, 'إضافة مادة دراسية', `إدراج المقرر التدريسي الجديد: ${newSub.name} بنصاب أدنى للنجاح ${newSub.minGrade}`);
     return newSub;
   }
   public updateSubject(id: string, updated: Partial<Subject>, activeUser: string, activeUsername: string): Subject {
     this.subjects = this.subjects.map(s => s.id === id ? { ...s, ...updated } : s);
-    this.saveToStorage('subjects', this.subjects);
+    this.persist('subjects', this.subjects);
     const sub = this.subjects.find(s => s.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل مادة دراسية', `تحديث تفاصيل درجات مادة: ${sub?.name}`);
     return sub;
@@ -610,7 +568,7 @@ class LocalSQLiteEngine {
   public deleteSubject(id: string, activeUser: string, activeUsername: string) {
     const sub = this.subjects.find(s => s.id === id);
     this.subjects = this.subjects.filter(s => s.id !== id);
-    this.saveToStorage('subjects', this.subjects);
+    this.persist('subjects', this.subjects);
     if (sub) {
       this.addAuditLog(activeUser, activeUsername, 'حذف مادة دراسية', `إسقاط مادة التدريس: ${sub.name}`);
     }
@@ -659,7 +617,7 @@ class LocalSQLiteEngine {
       id: `sch-${Date.now()}`
     };
     this.schedules.push(newSch);
-    this.saveToStorage('schedules', this.schedules);
+    this.persist('schedules', this.schedules);
 
     const clsName = this.classrooms.find(c => c.id === sch.classroomId)?.name || '';
     const subName = this.subjects.find(s => s.id === sch.subjectId)?.name || '';
@@ -671,7 +629,7 @@ class LocalSQLiteEngine {
 
   public deleteSchedule(id: string, activeUser: string, activeUsername: string) {
     this.schedules = this.schedules.filter(s => s.id !== id);
-    this.saveToStorage('schedules', this.schedules);
+    this.persist('schedules', this.schedules);
     this.addAuditLog(activeUser, activeUsername, 'إلغاء حصة بالجدول', 'تم شطب الحصة الدراسية من الجدول العام للفصل');
   }
 
@@ -690,7 +648,7 @@ class LocalSQLiteEngine {
         });
       }
     });
-    this.saveToStorage('attendances', this.attendances);
+    this.persist('attendances', this.attendances);
     this.addAuditLog(activeUser, activeUsername, 'رصد الحضور اليومي', `تسجيل حضور وغياب لعدد ${records.length} طلاب بتأريخ الكشف`);
   }
 
@@ -723,7 +681,7 @@ class LocalSQLiteEngine {
       this.grades.push(prepared);
     }
 
-    this.saveToStorage('grades', this.grades);
+    this.persist('grades', this.grades);
     const stdName = this.students.find(s => s.id === rec.studentId)?.name || '';
     const subName = subject ? subject.name : '';
     this.addAuditLog(activeUser, activeUsername, 'رصد درجة طالب', `إثبات وحساب درجات مادة ${subName} للطالب: ${stdName} بتقدير إجمالي ${total}`);
@@ -738,13 +696,13 @@ class LocalSQLiteEngine {
       id: `fee-${Date.now()}`
     };
     this.feeTypes.push(newFee);
-    this.saveToStorage('fee_types', this.feeTypes);
+    this.persist('fee_types', this.feeTypes);
     this.addAuditLog(activeUser, activeUsername, 'إضافة رسم مالي', `استحداث بند مالي (${newFee.name}) بقيمة ${newFee.amount} ريال`);
     return newFee;
   }
   public updateFeeType(id: string, updated: Partial<FeeType>, activeUser: string, activeUsername: string): FeeType {
     this.feeTypes = this.feeTypes.map(f => f.id === id ? { ...f, ...updated } : f);
-    this.saveToStorage('fee_types', this.feeTypes);
+    this.persist('fee_types', this.feeTypes);
     const f = this.feeTypes.find(f => f.id === id)!;
     this.addAuditLog(activeUser, activeUsername, 'تعديل ثمن بند مالي', `تغيير قيمة بند الرسم المالي: ${f?.name}`);
     return f;
@@ -758,7 +716,7 @@ class LocalSQLiteEngine {
       id: `pay-${Date.now()}`
     };
     this.feePayments.push(newPay);
-    this.saveToStorage('fee_payments', this.feePayments);
+    this.persist('fee_payments', this.feePayments);
     const stdName = this.students.find(s => s.id === pay.studentId)?.name || '';
     const feeName = this.feeTypes.find(f => f.id === pay.feeTypeId)?.name || '';
     this.addAuditLog(activeUser, activeUsername, 'تحصيل وإيصال نقدي', `إصدار سند دفع بقيمة ${pay.amountPaid} ريال للطالب: ${stdName} بخصوص ${feeName}`);
@@ -769,7 +727,7 @@ class LocalSQLiteEngine {
   public getSettings(): SchoolSettings { return this.settings; }
   public updateSettings(upd: Partial<SchoolSettings>, activeUser: string, activeUsername: string): SchoolSettings {
     this.settings = { ...this.settings, ...upd };
-    this.saveToStorage('settings', this.settings);
+    this.persist('settings', this.settings);
     this.addAuditLog(activeUser, activeUsername, 'تغيير إعدادات المدرسة', 'تعديل البيانات العامة وشعار التقارير الرسمية');
     return this.settings;
   }
@@ -1037,7 +995,7 @@ class LocalSQLiteEngine {
       this.behaviorEvaluations.push(prepared);
     }
 
-    this.saveToStorage('behavior_evaluations', this.behaviorEvaluations);
+    this.persist('behavior_evaluations', this.behaviorEvaluations);
     
     const stdName = this.students.find(s => s.id === evalData.studentId)?.name || '';
     this.addAuditLog(
@@ -1051,4 +1009,4 @@ class LocalSQLiteEngine {
   }
 }
 
-export const mockDb = new LocalSQLiteEngine();
+export const schoolDatabase = new SchoolDatabaseController();

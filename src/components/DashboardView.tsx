@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { 
   Users, 
   GraduationCap, 
@@ -25,12 +25,12 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ currentUser, onNavigate }: DashboardViewProps) {
-  const students = mockDb.getStudents();
-  const teachers = mockDb.getTeachers();
-  const classes = mockDb.getClassrooms();
-  const attendance = mockDb.getAttendances();
-  const payments = mockDb.getFeePayments();
-  const settings = mockDb.getSettings();
+  const students = schoolDatabase.getStudents();
+  const teachers = schoolDatabase.getTeachers();
+  const classes = schoolDatabase.getClassrooms();
+  const attendance = schoolDatabase.getAttendances();
+  const payments = schoolDatabase.getFeePayments();
+  const settings = schoolDatabase.getSettings();
 
   // 1. Calculate figures
   const totalStudents = students.length;
@@ -55,10 +55,10 @@ export default function DashboardView({ currentUser, onNavigate }: DashboardView
   ];
 
   // Map schedules to list of classes
-  const schedules = mockDb.getSchedules();
-  const subjects = mockDb.getSubjects();
-  const classrooms = mockDb.getClassrooms();
-  const teachersList = mockDb.getTeachers();
+  const schedules = schoolDatabase.getSchedules();
+  const subjects = schoolDatabase.getSubjects();
+  const classrooms = schoolDatabase.getClassrooms();
+  const teachersList = schoolDatabase.getTeachers();
 
   const todayPeriods = schedules.slice(0, 5).map((sch, i) => {
     const cls = classrooms.find(c => c.id === sch.classroomId);

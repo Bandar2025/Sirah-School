@@ -5,7 +5,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useCustomPrint } from '../hooks/useCustomPrint';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Student, FeeType, FeePayment } from '../types';
 import { 
   DollarSign, 
@@ -28,9 +28,9 @@ interface FinancialViewProps {
 }
 
 export default function FinancialView({ currentUser }: FinancialViewProps) {
-  const [feeTypes, setFeeTypes] = useState<FeeType[]>(mockDb.getFeeTypes());
-  const [payments, setPayments] = useState<FeePayment[]>(mockDb.getFeePayments());
-  const [students] = useState<Student[]>(mockDb.getStudents());
+  const [feeTypes, setFeeTypes] = useState<FeeType[]>(schoolDatabase.getFeeTypes());
+  const [payments, setPayments] = useState<FeePayment[]>(schoolDatabase.getFeePayments());
+  const [students] = useState<Student[]>(schoolDatabase.getStudents());
   const [searchQuery, setSearchQuery] = useState('');
 
   const receiptPrintRef = useRef<HTMLDivElement>(null);
@@ -58,8 +58,8 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setFeeTypes(mockDb.getFeeTypes());
-    setPayments(mockDb.getFeePayments());
+    setFeeTypes(schoolDatabase.getFeeTypes());
+    setPayments(schoolDatabase.getFeePayments());
   };
 
   const handleCreateFeeType = (e: React.FormEvent) => {
@@ -69,7 +69,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
       return;
     }
 
-    mockDb.addFeeType({
+    schoolDatabase.addFeeType({
       name: fName,
       amount: Number(fAmount),
       description: fDesc
@@ -94,14 +94,14 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
     // Reference number generator
     const ref = `TXN-${Math.floor(Math.random() * 900000) + 100000}`;
 
-    mockDb.addFeePayment({
+    schoolDatabase.addFeePayment({
       studentId: pStudentId,
       feeTypeId: pFeeTypeId,
       amountPaid: Number(pAmountPaid),
       paymentDate: new Date().toISOString().split('T')[0],
       paymentMethod: pMethod,
       referenceNumber: ref,
-      academicYear: mockDb.getSettings().currentAcademicYear,
+      academicYear: schoolDatabase.getSettings().currentAcademicYear,
       notes: pNotes
     }, currentUser.id, currentUser.username);
 
@@ -143,7 +143,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
     link.click();
     document.body.removeChild(link);
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id,
       currentUser.username,
       'تصدير دفتر الحسابات والسندات الموردة',
@@ -511,7 +511,7 @@ export default function FinancialView({ currentUser }: FinancialViewProps) {
               <button 
                 onClick={() => {
                   handlePrintReceipt();
-                  mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة سند قبض مالي', `طباعة وإشهار السند رقم ${printedPayment.referenceNumber}`);
+                  schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'طباعة سند قبض مالي', `طباعة وإشهار السند رقم ${printedPayment.referenceNumber}`);
                 }}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm transition"
               >

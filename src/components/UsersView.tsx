@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { User, UserRole } from '../types';
 import { 
   Users, 
@@ -25,8 +25,8 @@ interface UsersViewProps {
 }
 
 export default function UsersView({ currentUser }: UsersViewProps) {
-  const [users, setUsers] = useState<User[]>(mockDb.getUsers());
-  const [auditLogs, setAuditLogs] = useState(mockDb.getAuditLogs());
+  const [users, setUsers] = useState<User[]>(schoolDatabase.getUsers());
+  const [auditLogs, setAuditLogs] = useState(schoolDatabase.getAuditLogs());
   const [searchQuery, setSearchQuery] = useState('');
   const [logSearchQuery, setLogSearchQuery] = useState('');
 
@@ -44,8 +44,8 @@ export default function UsersView({ currentUser }: UsersViewProps) {
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setUsers(mockDb.getUsers());
-    setAuditLogs(mockDb.getAuditLogs());
+    setUsers(schoolDatabase.getUsers());
+    setAuditLogs(schoolDatabase.getAuditLogs());
   };
 
   const handleOpenAddModal = () => {
@@ -87,7 +87,7 @@ export default function UsersView({ currentUser }: UsersViewProps) {
         return;
       }
 
-      mockDb.addUser({
+      schoolDatabase.addUser({
         username: formUsername,
         fullName: formFullName,
         role: formRole,
@@ -96,7 +96,7 @@ export default function UsersView({ currentUser }: UsersViewProps) {
         status: formStatus
       }, currentUser.id, currentUser.username);
     } else {
-      mockDb.updateUser(editingUser.id, {
+      schoolDatabase.updateUser(editingUser.id, {
         username: formUsername,
         fullName: formFullName,
         role: formRole,
@@ -116,7 +116,7 @@ export default function UsersView({ currentUser }: UsersViewProps) {
       return;
     }
     if (window.confirm('هل أنت متأكد من حذف هذا المستخدم بشكل نهائي وإسقاط جميع صلاحياته؟')) {
-      mockDb.deleteUser(id, currentUser.id, currentUser.username);
+      schoolDatabase.deleteUser(id, currentUser.id, currentUser.username);
       refreshData();
     }
   };
@@ -127,7 +127,7 @@ export default function UsersView({ currentUser }: UsersViewProps) {
       return;
     }
     const newStatus = u.status === 'active' ? 'inactive' : 'active';
-    mockDb.updateUser(u.id, { status: newStatus }, currentUser.id, currentUser.username);
+    schoolDatabase.updateUser(u.id, { status: newStatus }, currentUser.id, currentUser.username);
     refreshData();
   };
 
@@ -277,7 +277,7 @@ export default function UsersView({ currentUser }: UsersViewProps) {
           </div>
           <button 
             onClick={() => {
-              mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير أرشيف المراجعة', 'تم تصدير نسخة محلية من اللوج الأمني');
+              schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'تصدير أرشيف المراجعة', 'تم تصدير نسخة محلية من اللوج الأمني');
               refreshData();
             }}
             className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition"

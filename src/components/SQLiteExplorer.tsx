@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { 
   Database, 
   Terminal, 
@@ -161,18 +161,18 @@ export default function SQLiteExplorer({ currentUser }: SQLiteExplorerProps) {
   // Get raw records based on selected table
   const getRawTableData = () => {
     switch (selectedTable) {
-      case 'users': return mockDb.getUsers();
-      case 'students': return mockDb.getStudents();
-      case 'parents': return mockDb.getParents();
-      case 'teachers': return mockDb.getTeachers();
-      case 'classrooms': return mockDb.getClassrooms();
-      case 'subjects': return mockDb.getSubjects();
-      case 'schedules': return mockDb.getSchedules();
-      case 'attendance': return mockDb.getAttendances();
-      case 'grades': return mockDb.getGrades();
-      case 'fee_types': return mockDb.getFeeTypes();
-      case 'fee_payments': return mockDb.getFeePayments();
-      case 'audit_logs': return mockDb.getAuditLogs();
+      case 'users': return schoolDatabase.getUsers();
+      case 'students': return schoolDatabase.getStudents();
+      case 'parents': return schoolDatabase.getParents();
+      case 'teachers': return schoolDatabase.getTeachers();
+      case 'classrooms': return schoolDatabase.getClassrooms();
+      case 'subjects': return schoolDatabase.getSubjects();
+      case 'schedules': return schoolDatabase.getSchedules();
+      case 'attendance': return schoolDatabase.getAttendances();
+      case 'grades': return schoolDatabase.getGrades();
+      case 'fee_types': return schoolDatabase.getFeeTypes();
+      case 'fee_payments': return schoolDatabase.getFeePayments();
+      case 'audit_logs': return schoolDatabase.getAuditLogs();
       default: return [];
     }
   };

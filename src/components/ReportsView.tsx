@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useMemo } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { useCustomPrint } from '../hooks/useCustomPrint';
 import { 
   Student, 
@@ -60,14 +60,14 @@ type ReportType = 'academic' | 'attendance' | 'financial' | 'unified';
 
 export default function ReportsView({ currentUser, initialReportType = 'unified' }: ReportsViewProps) {
   // DB States
-  const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
-  const [classrooms, setClassrooms] = useState<Classroom[]>(mockDb.getClassrooms());
-  const [subjects, setSubjects] = useState<Subject[]>(mockDb.getSubjects());
-  const [grades, setGrades] = useState<Grade[]>(mockDb.getGrades());
-  const [attendances, setAttendances] = useState<Attendance[]>(mockDb.getAttendances());
-  const [feeTypes, setFeeTypes] = useState<FeeType[]>(mockDb.getFeeTypes());
-  const [payments, setPayments] = useState<FeePayment[]>(mockDb.getFeePayments());
-  const [settings, setSettings] = useState<SchoolSettings>(mockDb.getSettings());
+  const [students, setStudents] = useState<Student[]>(schoolDatabase.getStudents());
+  const [classrooms, setClassrooms] = useState<Classroom[]>(schoolDatabase.getClassrooms());
+  const [subjects, setSubjects] = useState<Subject[]>(schoolDatabase.getSubjects());
+  const [grades, setGrades] = useState<Grade[]>(schoolDatabase.getGrades());
+  const [attendances, setAttendances] = useState<Attendance[]>(schoolDatabase.getAttendances());
+  const [feeTypes, setFeeTypes] = useState<FeeType[]>(schoolDatabase.getFeeTypes());
+  const [payments, setPayments] = useState<FeePayment[]>(schoolDatabase.getFeePayments());
+  const [settings, setSettings] = useState<SchoolSettings>(schoolDatabase.getSettings());
 
   // Component States
   const [reportType, setReportType] = useState<ReportType>(initialReportType);
@@ -104,14 +104,14 @@ export default function ReportsView({ currentUser, initialReportType = 'unified'
 
   // Recalculate / refresh mock data from SQLite mockup
   const handleRefreshData = () => {
-    setStudents(mockDb.getStudents());
-    setClassrooms(mockDb.getClassrooms());
-    setSubjects(mockDb.getSubjects());
-    setGrades(mockDb.getGrades());
-    setAttendances(mockDb.getAttendances());
-    setFeeTypes(mockDb.getFeeTypes());
-    setPayments(mockDb.getFeePayments());
-    setSettings(mockDb.getSettings());
+    setStudents(schoolDatabase.getStudents());
+    setClassrooms(schoolDatabase.getClassrooms());
+    setSubjects(schoolDatabase.getSubjects());
+    setGrades(schoolDatabase.getGrades());
+    setAttendances(schoolDatabase.getAttendances());
+    setFeeTypes(schoolDatabase.getFeeTypes());
+    setPayments(schoolDatabase.getFeePayments());
+    setSettings(schoolDatabase.getSettings());
   };
 
   const handleExportToExcel = () => {
@@ -351,7 +351,7 @@ export default function ReportsView({ currentUser, initialReportType = 'unified'
     return Object.keys(absenceCounts)
       .map(sid => {
         const studentObj = students.find(s => s.id === sid);
-        const parent = mockDb.getParents().find(p => p.id === studentObj?.parentId);
+        const parent = schoolDatabase.getParents().find(p => p.id === studentObj?.parentId);
         const cls = classrooms.find(c => c.id === studentObj?.classId);
         const counts = absenceCounts[sid];
         return {

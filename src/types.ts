@@ -171,4 +171,10 @@ export interface SchoolSettings {
   vicePrincipalName: string;
   studentAffairsName: string;
   semester: 'first' | 'second' | 'second_round';
+  // New release features
+  isConfigured: boolean;
+  licenseKey: string;
+  activationStatus: 'activated' | 'trial' | 'expired';
+  expiryDate: string;
+  version: string;
 }

@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useCustomPrint } from '../hooks/useCustomPrint';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Classroom, Student, Attendance, BehaviorEvaluation } from '../types';
 import { 
   UserCheck, 
@@ -57,10 +57,10 @@ const YEMENI_BEHAVIOR_INDICATORS = [
 ];
 
 export default function AttendanceView({ currentUser }: AttendanceViewProps) {
-  const [classrooms] = useState<Classroom[]>(mockDb.getClassrooms());
-  const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
-  const [attendance, setAttendance] = useState<Attendance[]>(mockDb.getAttendances());
-  const [behaviorEvals, setBehaviorEvals] = useState<BehaviorEvaluation[]>(mockDb.getBehaviorEvaluations());
+  const [classrooms] = useState<Classroom[]>(schoolDatabase.getClassrooms());
+  const [students, setStudents] = useState<Student[]>(schoolDatabase.getStudents());
+  const [attendance, setAttendance] = useState<Attendance[]>(schoolDatabase.getAttendances());
+  const [behaviorEvals, setBehaviorEvals] = useState<BehaviorEvaluation[]>(schoolDatabase.getBehaviorEvaluations());
 
   // Navigation: daily, monthly, behavior, warnings
   const [activeTab, setActiveTab2] = useState<'daily' | 'monthly' | 'behavior' | 'warnings'>('daily');
@@ -90,7 +90,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
 
   // Behavior evaluations active inputs
   const [selectedEvalStudentId, setSelectedEvalStudentId] = useState<string>('');
-  const [evalAcademicYear, setEvalAcademicYear] = useState<string>(mockDb.getSettings().currentAcademicYear);
+  const [evalAcademicYear, setEvalAcademicYear] = useState<string>(schoolDatabase.getSettings().currentAcademicYear);
   const [evalSemester, setEvalSemester] = useState<'first' | 'second' | 'second_round'>('first');
   const [evalMarks, setEvalMarks] = useState<Record<string, number>>({});
   const [evalNotes, setEvalNotes] = useState<string>('');
@@ -101,9 +101,9 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
   const [warnType, setWarnType] = useState<'warn1' | 'warn2' | 'final'>('warn1');
 
   const refreshData = () => {
-    setAttendance(mockDb.getAttendances());
-    setBehaviorEvals(mockDb.getBehaviorEvaluations());
-    setStudents(mockDb.getStudents());
+    setAttendance(schoolDatabase.getAttendances());
+    setBehaviorEvals(schoolDatabase.getBehaviorEvaluations());
+    setStudents(schoolDatabase.getStudents());
   };
 
   const activeStudents = students.filter(s => s.classId === selectedClassId && s.status === 'active');
@@ -172,7 +172,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
       notes: tempRecords[studentId].notes
     }));
 
-    mockDb.saveAttendanceBatch(payload, currentUser.id, currentUser.username);
+    schoolDatabase.saveAttendanceBatch(payload, currentUser.id, currentUser.username);
     setNotification('✓ تم حفظ كشف الحضور والغياب بنجاح في قاعدة بيانات المدرسة.');
     refreshData();
     setTimeout(() => setNotification(''), 4000);
@@ -217,7 +217,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
     link.click();
     document.body.removeChild(link);
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id,
       currentUser.username,
       'تصدير كشف الحضور والغياب',
@@ -263,7 +263,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
     link.click();
     document.body.removeChild(link);
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id,
       currentUser.username,
       'تصدير السجل الشهري',
@@ -290,7 +290,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
     else if (total >= 50) grade = 'مقبول';
     else grade = 'ضعيف';
 
-    mockDb.saveBehaviorEvaluation({
+    schoolDatabase.saveBehaviorEvaluation({
       studentId: selectedEvalStudentId,
       academicYear: evalAcademicYear,
       semester: evalSemester,
@@ -450,7 +450,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
                 onClick={() => {
                   handlePrintDaily();
                   const clsName = classrooms.find(c => c.id === selectedClassId)?.name || '';
-                  mockDb.addAuditLog(currentUser.id, currentUser.username, 'طباعة حضور يومي', `طباعة دفتر حضور غياب ${clsName} بتاريخ ${selectedDate}`);
+                  schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'طباعة حضور يومي', `طباعة دفتر حضور غياب ${clsName} بتاريخ ${selectedDate}`);
                 }}
                 className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-150 px-3.5 py-2 rounded-xl text-xs font-bold hover:cursor-pointer"
               >
@@ -476,7 +476,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
               </div>
               <div className="text-xs bg-slate-50 border border-slate-100 p-2 rounded-lg flex justify-between items-center font-semibold text-slate-700 mt-3">
                 <span>الصف الدراسي: {classrooms.find(c => c.id === selectedClassId)?.name || ''}</span>
-                <span>العام الدراسي: {mockDb.getSettings().currentAcademicYear}</span>
+                <span>العام الدراسي: {schoolDatabase.getSettings().currentAcademicYear}</span>
               </div>
             </div>
 
@@ -680,7 +680,7 @@ export default function AttendanceView({ currentUser }: AttendanceViewProps) {
                 </div>
                 <div className="text-left text-[10px] text-slate-500 font-sans">
                   <p>الصف: {classrooms.find(c => c.id === selectedClassId)?.name || ''}</p>
-                  <p>العام الدراسي: {mockDb.getSettings().currentAcademicYear}</p>
+                  <p>العام الدراسي: {schoolDatabase.getSettings().currentAcademicYear}</p>
                 </div>
               </div>
             </div>

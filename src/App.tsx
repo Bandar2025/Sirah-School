@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { mockDb } from './db/mockDb';
+import { schoolDatabase } from './db/database';
 import { User } from './types';
 
 // Importing all modules we developed
@@ -23,6 +23,9 @@ import SQLiteExplorer from './components/SQLiteExplorer';
 import SettingsView from './components/SettingsView';
 import AIAssistantView from './components/AIAssistantView';
 import DesktopHubView from './components/DesktopHubView';
+
+import SplashScreen from './components/SplashScreen';
+import FirstRunWizard from './components/FirstRunWizard';
 
 import { 
   School, 
@@ -57,7 +60,7 @@ import {
 
 export default function App() {
   // Authentication states
-  const [currentUser, setCurrentUser] = useState<User | null>(() => mockDb.getCurrentSession());
+  const [currentUser, setCurrentUser] = useState<User | null>(() => schoolDatabase.getCurrentSession());
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -81,6 +84,16 @@ export default function App() {
   
   // Simulation flag to test warning badge and storage offline state
   const [simulateFailure, setSimulateFailure] = useState(false);
+
+  // New release core states
+  const [showSplash, setShowSplash] = useState(true);
+  const [isConfigured, setIsConfigured] = useState(() => schoolDatabase.getSettings().isConfigured);
+
+  React.useEffect(() => {
+    // Hide splash after 3 seconds
+    const timer = setTimeout(() => setShowSplash(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -134,7 +147,7 @@ export default function App() {
     setLoginError('');
     
     // Attempt authentication inside mock SQLite
-    const user = mockDb.authenticate(username, password);
+    const user = schoolDatabase.authenticate(username, password);
     if (user) {
       setCurrentUser(user);
     } else {
@@ -143,10 +156,18 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    mockDb.clearSession();
+    schoolDatabase.clearSession();
     setCurrentUser(null);
     setActiveTab('dashboard');
   };
+
+  if (showSplash) {
+    return <SplashScreen />;
+  }
+
+  if (!isConfigured) {
+    return <FirstRunWizard onComplete={() => setIsConfigured(true)} />;
+  }
 
   // If user is not authenticated, show elegant official Yemeni Ministry of Education school landing interface
   if (!currentUser) {
@@ -621,7 +642,7 @@ export default function App() {
           <div className="flex items-center justify-between">
             <h2 className="text-white font-extrabold text-sm tracking-tight flex items-center gap-2">
               <span className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm ring-1 ring-white/10">م</span>
-              <span className="truncate">{mockDb.getSettings().schoolName}</span>
+              <span className="truncate">{schoolDatabase.getSettings().schoolName}</span>
             </h2>
             <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
               <X className="w-5 h-5" />
@@ -729,7 +750,7 @@ export default function App() {
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">م</div>
               <div>
                 <h1 className="text-sm font-bold text-slate-900 leading-tight block">{activeLabel}</h1>
-                <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">العام الدراسي: {mockDb.getSettings().currentAcademicYear}</p>
+                <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">العام الدراسي: {schoolDatabase.getSettings().currentAcademicYear}</p>
               </div>
             </div>
           </div>
@@ -885,7 +906,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   try {
-                    const jsonStr = mockDb.exportBackupJSON();
+                    const jsonStr = schoolDatabase.exportBackupJSON();
                     const blob = new Blob([jsonStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -914,7 +935,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   try {
-                    const sql = mockDb.exportSQLBackup();
+                    const sql = schoolDatabase.exportSQLBackup();
                     const blob = new Blob([sql], { type: 'text/plain;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");

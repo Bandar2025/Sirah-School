@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Parent, Student, FeePayment } from '../types';
 import { 
   Users, 
@@ -22,9 +22,9 @@ interface ParentsViewProps {
 }
 
 export default function ParentsView({ currentUser }: ParentsViewProps) {
-  const [parents, setParents] = useState<Parent[]>(mockDb.getParents());
-  const [students, setStudents] = useState<Student[]>(mockDb.getStudents());
-  const [payments, setPayments] = useState<FeePayment[]>(mockDb.getFeePayments());
+  const [parents, setParents] = useState<Parent[]>(schoolDatabase.getParents());
+  const [students, setStudents] = useState<Student[]>(schoolDatabase.getStudents());
+  const [payments, setPayments] = useState<FeePayment[]>(schoolDatabase.getFeePayments());
   const [searchQuery, setSearchQuery] = useState('');
   
   // Modal states
@@ -40,9 +40,9 @@ export default function ParentsView({ currentUser }: ParentsViewProps) {
   const [address, setAddress] = useState('');
 
   const refreshData = () => {
-    setParents(mockDb.getParents());
-    setStudents(mockDb.getStudents());
-    setPayments(mockDb.getFeePayments());
+    setParents(schoolDatabase.getParents());
+    setStudents(schoolDatabase.getStudents());
+    setPayments(schoolDatabase.getFeePayments());
   };
 
   const handleOpenAddModal = () => {
@@ -76,7 +76,7 @@ export default function ParentsView({ currentUser }: ParentsViewProps) {
 
     if (!editingParent) {
       // Create new
-      mockDb.addParent({
+      schoolDatabase.addParent({
         name,
         nationalId,
         phone,
@@ -86,7 +86,7 @@ export default function ParentsView({ currentUser }: ParentsViewProps) {
       }, currentUser.id, currentUser.username);
     } else {
       // Edit existing
-      mockDb.updateParent(editingParent.id, {
+      schoolDatabase.updateParent(editingParent.id, {
         name,
         nationalId,
         phone,
@@ -122,7 +122,7 @@ export default function ParentsView({ currentUser }: ParentsViewProps) {
     link.click();
     document.body.removeChild(link);
 
-    mockDb.addAuditLog(
+    schoolDatabase.addAuditLog(
       currentUser.id,
       currentUser.username,
       'تصدير كشف أولياء الأمور',

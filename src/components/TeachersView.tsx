@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Teacher } from '../types';
 import { 
   Users, 
@@ -26,7 +26,7 @@ interface TeachersViewProps {
 }
 
 export default function TeachersView({ currentUser }: TeachersViewProps) {
-  const [teachers, setTeachers] = useState<Teacher[]>(mockDb.getTeachers());
+  const [teachers, setTeachers] = useState<Teacher[]>(schoolDatabase.getTeachers());
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals state
@@ -46,7 +46,7 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setTeachers(mockDb.getTeachers());
+    setTeachers(schoolDatabase.getTeachers());
   };
 
   const handleOpenAddModal = () => {
@@ -90,7 +90,7 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
         setValidationError('رقم السجل المدني للتعاقد مكرر لشخص آخر!');
         return;
       }
-      mockDb.addTeacher({
+      schoolDatabase.addTeacher({
         name: tName,
         nationalId: tNationalId,
         qualification: tQualification,
@@ -101,7 +101,7 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
         specialty: tSpecialty
       }, currentUser.id, currentUser.username);
     } else {
-      mockDb.updateTeacher(editingTeacher.id, {
+      schoolDatabase.updateTeacher(editingTeacher.id, {
         name: tName,
         nationalId: tNationalId,
         qualification: tQualification,
@@ -119,7 +119,7 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
 
   const handleDeleteTeacher = (id: string) => {
     if (window.confirm('هل أنت متأكد من حذف هذا المعلم؟ جميع حصص الجدول المسندة إليه سيتم إلغائها لضمان سلامة مفاصل قاعدة البيانات.')) {
-      mockDb.deleteTeacher(id, currentUser.id, currentUser.username);
+      schoolDatabase.deleteTeacher(id, currentUser.id, currentUser.username);
       refreshData();
     }
   };
@@ -145,7 +145,7 @@ export default function TeachersView({ currentUser }: TeachersViewProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    mockDb.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف المعلمين', `تصدير ملف Excel/CSV للمتعاقدين بالهيئة التدريسية المصفاة لعدد (${filtered.length}) معلم`);
+    schoolDatabase.addAuditLog(currentUser.id, currentUser.username, 'تصدير كشف المعلمين', `تصدير ملف Excel/CSV للمتعاقدين بالهيئة التدريسية المصفاة لعدد (${filtered.length}) معلم`);
   };
 
   return (

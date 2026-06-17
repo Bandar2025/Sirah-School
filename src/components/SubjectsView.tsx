@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Subject, SchoolStage } from '../types';
 import { 
   BookOpen, 
@@ -23,7 +23,7 @@ interface SubjectsViewProps {
 }
 
 export default function SubjectsView({ currentUser }: SubjectsViewProps) {
-  const [subjects, setSubjects] = useState<Subject[]>(mockDb.getSubjects());
+  const [subjects, setSubjects] = useState<Subject[]>(schoolDatabase.getSubjects());
   const [searchQuery, setSearchQuery] = useState('');
 
   // Form states
@@ -38,7 +38,7 @@ export default function SubjectsView({ currentUser }: SubjectsViewProps) {
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setSubjects(mockDb.getSubjects());
+    setSubjects(schoolDatabase.getSubjects());
   };
 
   const handleOpenAddModal = () => {
@@ -74,14 +74,14 @@ export default function SubjectsView({ currentUser }: SubjectsViewProps) {
     }
 
     if (!editingSubject) {
-      mockDb.addSubject({
+      schoolDatabase.addSubject({
         name: sName,
         minGrade: Number(sMinGrade),
         maxGrade: Number(sMaxGrade),
         stage: sStage
       }, currentUser.id, currentUser.username);
     } else {
-      mockDb.updateSubject(editingSubject.id, {
+      schoolDatabase.updateSubject(editingSubject.id, {
         name: sName,
         minGrade: Number(sMinGrade),
         maxGrade: Number(sMaxGrade),
@@ -95,7 +95,7 @@ export default function SubjectsView({ currentUser }: SubjectsViewProps) {
 
   const handleDeleteSubject = (id: string) => {
     if (window.confirm('هل تريد بالتأكيد حذف هذه المادة؟ حذف المقررات يلغي درجات الامتحانات والجدول المرتبط بها.')) {
-      mockDb.deleteSubject(id, currentUser.id, currentUser.username);
+      schoolDatabase.deleteSubject(id, currentUser.id, currentUser.username);
       refreshData();
     }
   };

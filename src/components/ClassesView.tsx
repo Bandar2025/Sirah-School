@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Classroom, SchoolStage } from '../types';
 import { 
   Layers, 
@@ -24,8 +24,8 @@ interface ClassesViewProps {
 }
 
 export default function ClassesView({ currentUser }: ClassesViewProps) {
-  const [classes, setClasses] = useState<Classroom[]>(mockDb.getClassrooms());
-  const [students, setStudents] = useState(mockDb.getStudents());
+  const [classes, setClasses] = useState<Classroom[]>(schoolDatabase.getClassrooms());
+  const [students, setStudents] = useState(schoolDatabase.getStudents());
 
   // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,8 +45,8 @@ export default function ClassesView({ currentUser }: ClassesViewProps) {
   const [validationError, setValidationError] = useState('');
 
   const refreshData = () => {
-    setClasses(mockDb.getClassrooms());
-    setStudents(mockDb.getStudents());
+    setClasses(schoolDatabase.getClassrooms());
+    setStudents(schoolDatabase.getStudents());
   };
 
   const handleOpenAddModal = () => {
@@ -77,14 +77,14 @@ export default function ClassesView({ currentUser }: ClassesViewProps) {
     }
 
     if (!editingClass) {
-      mockDb.addClassroom({
+      schoolDatabase.addClassroom({
         name: cName,
         stage: cStage,
         maxCapacity: Number(cCapacity),
         roomNumber: cRoomNumber
       }, currentUser.id, currentUser.username);
     } else {
-      mockDb.updateClassroom(editingClass.id, {
+      schoolDatabase.updateClassroom(editingClass.id, {
         name: cName,
         stage: cStage,
         maxCapacity: Number(cCapacity),
@@ -103,7 +103,7 @@ export default function ClassesView({ currentUser }: ClassesViewProps) {
       return;
     }
     if (window.confirm('هل أنت متأكد من حذف هذا الفصل من الهيكلية المدرسية؟')) {
-      mockDb.deleteClassroom(id, currentUser.id, currentUser.username);
+      schoolDatabase.deleteClassroom(id, currentUser.id, currentUser.username);
       refreshData();
     }
   };
@@ -137,7 +137,7 @@ export default function ClassesView({ currentUser }: ClassesViewProps) {
     }
 
     // Execute
-    const promotedCount = mockDb.promoteStudents(promoFromClass, promoToClass, currentUser.id, currentUser.username);
+    const promotedCount = schoolDatabase.promoteStudents(promoFromClass, promoToClass, currentUser.id, currentUser.username);
     setPromoStatusText(`نجح نقل وترفيع عدد ${promotedCount} طلاب بالنمط التلقائي وإثبات الترحيل بقاعدة البيانات!`);
     refreshData();
   };

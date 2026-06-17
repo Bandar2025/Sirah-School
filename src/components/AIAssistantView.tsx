@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { mockDb } from '../db/mockDb';
+import { schoolDatabase } from '../db/database';
 import { Student, Grade, Attendance, Subject, Classroom } from '../types';
 import { 
   Sparkles, 
@@ -34,11 +34,11 @@ interface AIAssistantViewProps {
 }
 
 export default function AIAssistantView({ currentUser, initialTab = 'dropout' }: AIAssistantViewProps) {
-  const [students] = useState<Student[]>(mockDb.getStudents());
-  const [grades] = useState<Grade[]>(mockDb.getGrades());
-  const [attendances] = useState<Attendance[]>(mockDb.getAttendances());
-  const [classrooms] = useState<Classroom[]>(mockDb.getClassrooms());
-  const [subjects] = useState<Subject[]>(mockDb.getSubjects());
+  const [students] = useState<Student[]>(schoolDatabase.getStudents());
+  const [grades] = useState<Grade[]>(schoolDatabase.getGrades());
+  const [attendances] = useState<Attendance[]>(schoolDatabase.getAttendances());
+  const [classrooms] = useState<Classroom[]>(schoolDatabase.getClassrooms());
+  const [subjects] = useState<Subject[]>(schoolDatabase.getSubjects());
 
   const [activeTab, setActiveTab] = useState<'dropout' | 'recommend' | 'chatbot' | 'teacher'>(initialTab);
 
@@ -185,7 +185,7 @@ export default function AIAssistantView({ currentUser, initialTab = 'dropout' }:
         return;
       }
 
-      const parent = mockDb.getParents().find(p => p.id === student.parentId);
+      const parent = schoolDatabase.getParents().find(p => p.id === student.parentId);
       const studentGrades = grades.filter(g => g.studentId === recommendStudentId);
       
       // Calculate weak subjects
@@ -243,21 +243,21 @@ export default function AIAssistantView({ currentUser, initialTab = 'dropout' }:
         const active = students.filter(s => s.status === 'active').length;
         botResponse = `لدينا حالياً عدد **${count}** طالباً مقيداً في قاعدة البيانات بالمدرسة، من بينهم **${active}** طلاب نشطين وفي القيد الصفي، والبقية موزعين بين طلاب منقولين وخريجين ومؤرشفين.`;
       } else if (prompt.includes('معلم') || prompt.includes('مدرس') || prompt.includes('معلمين') || prompt.includes('كادر')) {
-        const count = mockDb.getTeachers().length;
+        const count = schoolDatabase.getTeachers().length;
         botResponse = `يبلغ كادر التدريس المسجل بالنظام حالياً **${count}** معلمين متخصصين بالمواد الأكاديمية للمراحل الدراسية المختلفة.`;
       } else if (prompt.includes('فصل') || prompt.includes('صفوف') || prompt.includes('مرحلة')) {
         const count = classrooms.length;
         botResponse = `النظام يدير حالياً **${count}** فصول دراسية مقسمة على مراحل التعليم المتوافقة مع هيكلة وزارة التربية والتعليم بالجمهورية اليمنية (ابتدائي، متوسط، ثانوي).`;
       } else if (prompt.includes('رسوم') || prompt.includes('مالية') || prompt.includes('فلوس') || prompt.includes('صندوق')) {
-        const total = mockDb.getFeePayments().reduce((sum, p) => sum + p.amountPaid, 0);
+        const total = schoolDatabase.getFeePayments().reduce((sum, p) => sum + p.amountPaid, 0);
         botResponse = `إجمالي الرسوم المدرسية المحصلة وتغذية الخزينة تبلغ **${total.toLocaleString()} ريال يمني** مع توفير إيصالات قبض كاملة معمدة باسم المدرسة لكافة أولياء الأمور.`;
       } else if (prompt.includes('جدول') || prompt.includes('حصة') || prompt.includes('حصص')) {
-        const count = mockDb.getSchedules().length;
+        const count = schoolDatabase.getSchedules().length;
         botResponse = `تم إدراج وجدولة **${count}** حسم حصص دراسية وإسناد بالجدول المدرسي العام للفصول، مع حوكمة ذكية تمنع تعارض الحصص للمعلم أو الغرفة الصفيّة في نفس التوقيت!`;
       } else if (prompt.includes('اليمن') || prompt.includes('محافظة') || prompt.includes('وزارة')) {
         botResponse = `تم تخصيص وصقل نظام المنارة خصيصاً ليتناسب مع اشتراطات وزارة التربية والتعليم في اليمن، مع توفير دعم لأكثر من 19 محافظة يمنية في سجلات الطلاب وطباعة الاستمارات الرسمية المتوافقة تماماً.`;
       } else if (prompt.includes('سجل') || prompt.includes('أمان') || prompt.includes('sqlite')) {
-        const logsCount = mockDb.getAuditLogs().length;
+        const logsCount = schoolDatabase.getAuditLogs().length;
         botResponse = `النظام يتمتع بوحدة أمنية وحوكمة صارمة تسجل أدق العمليات؛ تم حصر **${logsCount}** إجراء تدقيق عمليات بالنظام لحفظ شفافية السجلات المحلية.`;
       } else {
         botResponse = 'شكراً لسؤالك! أنا مساعد ذكي متصل بقاعدة بيانات المنارة الأكاديمية الشاملة. يمكنني إفادتك بإحصاءات الطلاب، أعداد المعلمين، الرسوم المحصلة، تتبع جداول الحصص أو تحليل أية مدخلات بالمدرسة. هل ترغب في معرفة المزيد؟';
@@ -628,7 +628,7 @@ export default function AIAssistantView({ currentUser, initialTab = 'dropout' }:
                       ))}
                     </ol>
                     <p className="leading-relaxed text-[10px] text-slate-400 pt-2 border-t border-slate-200">
-                      شكرًا لإنضباطكم الفعال في الشراكة التعليمية. هاتف التواصل المدرسي المباشر: {mockDb.getSettings().contactPhone}
+                      شكرًا لإنضباطكم الفعال في الشراكة التعليمية. هاتف التواصل المدرسي المباشر: {schoolDatabase.getSettings().contactPhone}
                     </p>
                   </div>
 
