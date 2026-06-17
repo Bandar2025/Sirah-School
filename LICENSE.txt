@@ -17,7 +17,7 @@ limitations under the License.
 ---
 
 PRODUCT INFORMATION:
-System: Sirah School ERP
+System: Al-Manara School ERP
 Publisher: Bandr Solutions
 Location: Sana'a, Yemen
-Support: support@sirah.edu.ye | +967-771122334
+Support: support@al-manara.edu.ye | +967-771122334

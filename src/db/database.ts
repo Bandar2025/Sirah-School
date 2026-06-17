@@ -170,25 +170,22 @@ const DEFAULT_FEE_PAYMENTS: FeePayment[] = [
 ];
 
 const DEFAULT_SETTINGS: SchoolSettings = {
-  schoolName: 'مدرسة مجمع عقبة بن نافع بالحليمة العليا الحكومي الشامل',
-  logoUrl: '🇾🇪',
-  contactPhone: '+967-4-244322',
-  contactEmail: 'info@oqbah.edu.ye',
-  currentAcademicYear: '1447هـ (2025 - 2026م)',
-  address: 'الجمهورية اليمنية - مجمع عقبة بن نافع - محافظة تعز - مديرية التعزية - الحليمة العليا',
-  bankAccount: 'YE3020000018873299102911 (البنك المركزي اليمني - تعز)',
-  schoolType: 'government',
-  governorate: 'تعز',
-  district: 'التعزية',
+  schoolName: 'مجمع المنارة التعليمي الشامل',
+  logoUrl: 'https://img.icons8.com/fluency/96/school.png',
+  contactPhone: '+967-771122334',
+  contactEmail: 'info@almanara-edu.ye',
+  currentAcademicYear: '2025/2026',
+  address: 'الجمهورية اليمنية - مجمع المنارة - محافظة تعز',
+  bankAccount: 'YE3020000018873299102911',
+  schoolType: 'complex',
+  governorate: 'أمانة العاصمة',
+  district: 'مديرية الوحدة',
   principalName: 'أ. طه بن يحيى عياش المنهي',
   vicePrincipalName: 'أ. عبد السلام امين هزاع',
   studentAffairsName: 'أ. سلوى عبدالله عبد اللطيف الشيباني',
   semester: 'first',
   isConfigured: false,
-  licenseKey: 'SR-TRIAL-0000-0000',
-  activationStatus: 'trial',
-  expiryDate: '2027-06-15',
-  version: '2.5.0-YEM'
+  version: '2.5.0-GOLD-YEM'
 };
 
 const DEFAULT_AUDIT_LOGS: AuditLog[] = [

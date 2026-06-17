@@ -1,0 +1,10 @@
+# End User License Agreement (EULA)
+
+BY INSTALLING OR USING THE AL-MANARA SCHOOL ERP, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT.
+
+1. **Commercial Use**: Each installation requires a valid License Key.
+2. **Proprietary Rights**: All source code, designs, and algorithms are the property of Bandr Solutions.
+3. **Data Responsibility**: The developer is NOT responsible for any data loss resulting from hardware failure or improper backup procedures.
+4. **Activation**: The system must be activated within 30 days of installation to continue full functionality.
+
+Copyright © 2026 Bandr Solutions. All Rights Reserved.

@@ -1,20 +1,41 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Al-Manara School ERP - مجمع المنارة الشامل
+## المؤسسة التعليمية الرائدة للحلول البرمجية - بن درر (Bandr Solutions)
 
-# Run and deploy your AI Studio app
+![Version](https://img.shields.io/badge/Version-2.5.0--GOLD-indigo)
+![Release](https://img.shields.io/badge/Release-June--2026-green)
+![Target](https://img.shields.io/badge/Platform-Yemen--Schools-red)
 
-This contains everything you need to run your app locally.
+## 🌟 نظرة عامة (Overview)
+نظام المنارة ERP هو نظام الإنتاج الفعلي الموجه للمدارس في الجمهورية اليمنية. يوفر حلاً متكاملاً يعمل دون اتصال بالإنترنت (Offline First) لضمان استمرارية العمل في ظل ظروف البنية التحتية المتغيرة.
 
-View your app in AI Studio: https://ai.studio/apps/4001d22d-4d0a-4e1d-b161-503772ea017f
+## 🚀 الميزات الرئيسية (Key Features)
+* **إدارة شؤون الطلاب**: دورة حياة كاملة من القبول حتى التخرج.
+* **الكنترول المركزي**: رصد درجات آلي، حساب تقديرات، وتوليد شهادات وزارية.
+* **النظام المالي**: تتبع الرسوم، إصدار سندات، وإقفال يومي.
+* **الأرشفة الإلكترونية**: حفظ ملفات الطلاب والمعلمين رقمياً.
+* **المساعد الذكي (AI)**: تحليل أداء الطلاب وتوليد تقارير إحصائية.
 
-## Run Locally
+## 🛠 البناء التقني (Tech Stack)
+* **Frontend**: React 18, TypeScript, Tailwind CSS, Motion (Framer).
+* **Backend**: Node.js, Express, tsx.
+* **Database**: SQLite 3 (Physical persistent storage).
+* **Reporting**: Excel (XLSX) Export/Import, Custom PDF/Print engine.
 
-**Prerequisites:**  Node.js
+## 📦 خطوات التشغيل (Installation)
+1. **تثبيت التبعيات**: `npm install`.
+2. **بدء البدء**: `npm run dev`.
+3. **الدخول الافتراضي**:
+   - المستخدم: `admin`
+   - كلمة المرور: `admin`
 
+## 📂 هيكل قاعدة البيانات
+يتم حفظ البيانات في المسار المادي: `/data/school.db`.
+يمكنك فحص قاعدة البيانات مباشرة عبر "مستعرض SQLite" المدمج في قائمة الإعدادات.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛡 النسخ الاحتياطي
+النظام مزود بنظام "النسخ الفوري" ونظام "النسخ السحابي الاختياري". يرجى مراجعة [ADMIN_GUIDE_AR.md](./ADMIN_GUIDE_AR.md) للتفاصيل.
+
+---
+**تطوير وتوزيع:** شركة بن درر للحلول البرمجية والتقنية الحديثة.
+**الموقع**: صنعاء - مجمع المنارة.
+**واتساب**: +967-771122334

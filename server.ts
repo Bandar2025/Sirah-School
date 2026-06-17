@@ -202,9 +202,6 @@ function initializeTables() {
       studentAffairsName TEXT,
       semester TEXT,
       isConfigured INTEGER,
-      licenseKey TEXT,
-      activationStatus TEXT,
-      expiryDate TEXT,
       version TEXT
     )`);
 
@@ -253,12 +250,12 @@ function seedDefaults() {
       schoolName, logoUrl, contactPhone, contactEmail, currentAcademicYear, 
       address, bankAccount, schoolType, governorate, district, 
       principalName, vicePrincipalName, studentAffairsName, semester,
-      isConfigured, licenseKey, activationStatus, expiryDate, version
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run([
-      'مؤسسة سيره التعليمية - مجمع المنارة الشامل',
+      isConfigured, version
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run([
+      'مؤسسة المنارة التعليمية - مجمع المنارة الشامل',
       '🇾🇪',
       '+967-4-244322',
-      'info@sirah.edu.ye',
+      'info@al-manara.edu.ye',
       '1447هـ (2025 - 2026م)',
       'الجمهورية اليمنية - مجمع المنارة - محافظة تعز - مديرية التعزية - الحليمة العليا',
       'YE3020000018873299102911 (البنك المركزي اليمني - تعز)',
@@ -270,9 +267,6 @@ function seedDefaults() {
       'أ. سلوى عبدالله عبد اللطيف الشيباني',
       'first',
       0, // isConfigured
-      'SR-TRIAL-0000-0000',
-      'trial',
-      '2027-06-15',
       '2.5.0-YEM'
     ]);
   });

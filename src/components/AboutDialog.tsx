@@ -30,11 +30,16 @@ export default function AboutDialog({ onClose }: AboutDialogProps) {
           </button>
 
           <div className="flex items-center gap-4 relative">
-            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6">
-              <ShieldCheck className="w-10 h-10 text-indigo-600" />
+            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg transform -rotate-6 overflow-hidden">
+              <div className="relative">
+                <ShieldCheck className="w-10 h-10 text-indigo-600" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                </div>
+              </div>
             </div>
             <div>
-              <h2 className="text-xl font-extrabold tracking-tight">نظام السيرة ERP</h2>
+              <h2 className="text-xl font-extrabold tracking-tight">نظام المنارة ERP</h2>
               <p className="text-indigo-100 text-xs font-medium">النسخة الذهبية للإصدار النهائي</p>
             </div>
           </div>
@@ -47,9 +52,9 @@ export default function AboutDialog({ onClose }: AboutDialogProps) {
               <p className="text-sm font-bold text-slate-900">{settings.version || '2.5.0-YEM'}</p>
             </div>
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-wider">حالة الترخيص</p>
-              <p className={`text-sm font-bold ${settings.activationStatus === 'activated' ? 'text-green-600' : 'text-amber-600'}`}>
-                {settings.activationStatus === 'activated' ? 'مرخص مفعل' : 'نسخة تجريبية'}
+              <p className="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-wider">نمط التشغيل</p>
+              <p className="text-sm font-bold text-emerald-600">
+                محلي كامل (دون اتصال)
               </p>
             </div>
           </div>
@@ -71,7 +76,7 @@ export default function AboutDialog({ onClose }: AboutDialogProps) {
               </div>
               <div>
                 <p className="text-[10px] text-slate-500 font-bold leading-none mb-1">المطور</p>
-                <p className="text-xs font-bold text-slate-900">Bandr Solutions - بن درهم للحلول البرمجية</p>
+                <p className="text-xs font-bold text-slate-900">Bandr Solutions - شركة بن درر للحلول البرمجية</p>
               </div>
             </div>
 
@@ -93,7 +98,7 @@ export default function AboutDialog({ onClose }: AboutDialogProps) {
           </div>
 
           <p className="text-center text-[10px] text-slate-400 font-medium leading-relaxed px-4">
-            جميع الحقوق محفوظة © 2026 لصالح بن درهم للحلول المتكاملة. يمنع النسخ أو إعادة التوزيع دون تصريح كتابي.
+            جميع الحقوق محفوظة © 2026 لصالح شركة بن درر للحلول البرمجية. يمنع النسخ أو إعادة التوزيع دون تصريح كتابي.
           </p>
         </div>
       </motion.div>

@@ -33,7 +33,7 @@ export default function SplashScreen() {
           transition={{ delay: 0.3 }}
           className="text-4xl font-extrabold text-white tracking-tight mb-2"
         >
-          نظام السيرة ERP
+          نظام المنارة ERP
         </motion.h1>
         
         <motion.div 
@@ -43,7 +43,7 @@ export default function SplashScreen() {
           className="flex items-center justify-center gap-3 mb-8"
         >
           <span className="h-[1px] w-8 bg-indigo-300" />
-          <p className="text-indigo-100 text-sm font-medium tracking-[0.2em] uppercase">Sirah School Management</p>
+          <p className="text-indigo-100 text-sm font-medium tracking-[0.2em] uppercase">Al-Manara School Management</p>
           <span className="h-[1px] w-8 bg-indigo-300" />
         </motion.div>
 

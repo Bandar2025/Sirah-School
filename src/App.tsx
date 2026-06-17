@@ -23,9 +23,9 @@ import SQLiteExplorer from './components/SQLiteExplorer';
 import SettingsView from './components/SettingsView';
 import AIAssistantView from './components/AIAssistantView';
 import DesktopHubView from './components/DesktopHubView';
-
 import SplashScreen from './components/SplashScreen';
 import FirstRunWizard from './components/FirstRunWizard';
+import { HelpButton } from './components/HelpSystem';
 
 import { 
   School, 
@@ -830,6 +830,7 @@ export default function App() {
 
         {/* App view canvas */}
         <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto bg-slate-50/50">
+          <HelpButton context={activeTab} />
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
